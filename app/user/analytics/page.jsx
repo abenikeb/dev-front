@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
-import { Layout, Row, Col, Card, Table, Button } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { Layout, Row, Col, Card, Table, Button, Input } from "antd";
+import { Tag } from "antd";
+import { DownloadOutlined, SearchOutlined } from "@ant-design/icons";
 import http from "@app/api-services/httpService";
 import "chart.js/auto";
 const { Content } = Layout;
+const { Search } = Input;
 
 const AnalyticsPage = () => {
   const [userData, setUserData] = useState([]);
@@ -39,10 +41,59 @@ const AnalyticsPage = () => {
     }
   };
 
+  const prepareLastWeekChartData = () => {
+    const currentDate = new Date();
+    const threeMonthsAgo = new Date(
+      currentDate.getTime() - 90 * 24 * 60 * 60 * 1000
+    );
+
+    const lastThreeMonthsUserData = userData.filter((item) => {
+      const createdAtDate = new Date(item.createdAt);
+      return createdAtDate >= threeMonthsAgo;
+    });
+
+    const lastThreeMonthsOrganizationData = organizationData.filter((item) => {
+      const createdAtDate = new Date(item.createdAt);
+      return createdAtDate >= threeMonthsAgo;
+    });
+
+    const labels = [
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+      "Monday",
+    ];
+
+    const lastThreeMonthsUserDataCounts = countRegistrations(
+      lastThreeMonthsUserData
+    );
+    const lastThreeMonthsOrganizationDataCounts = countRegistrations(
+      lastThreeMonthsOrganizationData
+    );
+
+    const userDataValues = labels.map(
+      (day, index) => lastThreeMonthsUserDataCounts[index] || 0
+    );
+    const organizationDataValues = labels.map(
+      (day, index) => lastThreeMonthsOrganizationDataCounts[index] || 0
+    );
+
+    return {
+      labels,
+      userDataValues,
+      organizationDataValues,
+      lastWeekUserData: lastThreeMonthsUserData,
+      lastWeekOrganizationData: lastThreeMonthsOrganizationData,
+    };
+  };
+
   const processLastWeekData = () => {
     const currentDate = new Date();
     const oneWeekAgo = new Date(
-      currentDate.getTime() - 7 * 24 * 60 * 60 * 1000
+      currentDate.getTime() - 90 * 24 * 60 * 60 * 1000
     );
 
     const lastWeekUserData = userData.filter((item) => {
@@ -73,54 +124,6 @@ const AnalyticsPage = () => {
   const calculateIndex = (recordIndex) => {
     const { current, pageSize } = pagination;
     return (current - 1) * pageSize + recordIndex + 1;
-  };
-
-  const prepareLastWeekChartData = () => {
-    const currentDate = new Date();
-    const oneWeekAgo = new Date(
-      currentDate.getTime() - 90 * 24 * 60 * 60 * 1000
-    );
-
-    const lastWeekUserData = userData.filter((item) => {
-      const createdAtDate = new Date(item.createdAt);
-      // return createdAtDate >= oneWeekAgo;
-      return createdAtDate;
-    });
-
-    const lastWeekOrganizationData = organizationData.filter((item) => {
-      const createdAtDate = new Date(item.createdAt);
-      return createdAtDate >= oneWeekAgo;
-    });
-
-    const labels = [
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-      "Monday",
-    ];
-
-    const lastWeekUserDataCounts = countRegistrations(lastWeekUserData);
-    const lastWeekOrganizationDataCounts = countRegistrations(
-      lastWeekOrganizationData
-    );
-
-    const userDataValues = labels.map(
-      (day, index) => lastWeekUserDataCounts[index] || 0
-    );
-    const organizationDataValues = labels.map(
-      (day, index) => lastWeekOrganizationDataCounts[index] || 0
-    );
-
-    return {
-      labels,
-      userDataValues,
-      organizationDataValues,
-      lastWeekUserData,
-      lastWeekOrganizationData,
-    };
   };
 
   const countRegistrations = (data) => {
@@ -166,16 +169,43 @@ const AnalyticsPage = () => {
       title: "Tel",
       dataIndex: "tel",
       key: "tel",
+      render: (text) => `+251 ${text}`,
     },
     {
       title: "Role",
       dataIndex: "role",
       key: "role",
+      render: (text) => (
+        <Tag
+          color={text === "Admin" ? "cyan" : "orange"}
+          style={{ fontWeight: "normal" }}
+        >
+          {text}
+        </Tag>
+      ),
+    },
+    {
+      title: "Registration Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text, record) => {
+        const date = new Date(text);
+        const options = { month: "short", day: "2-digit", year: "numeric" };
+        return date.toLocaleDateString("en-US", options);
+      },
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (text) => (
+        <Tag
+          color={text === "approved" ? "green" : "orange"}
+          style={{ fontWeight: "normal" }}
+        >
+          {text}
+        </Tag>
+      ),
     },
   ];
 
@@ -252,11 +282,39 @@ const AnalyticsPage = () => {
     );
   };
 
+  const filterUserData = (value) => {
+    const filteredData = userData.filter(
+      (user) =>
+        user.firstName.toLowerCase().includes(value.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(value.toLowerCase()) ||
+        user.email.toLowerCase().includes(value.toLowerCase()) ||
+        user.tel.toLowerCase().includes(value.toLowerCase()) ||
+        user.role.toLowerCase().includes(value.toLowerCase()) ||
+        user.status.toLowerCase().includes(value.toLowerCase())
+    );
+    setLastWeekUserData(filteredData);
+  };
+
+  // Function to filter organization data based on search input
+  const filterOrganizationData = (value) => {
+    const filteredData = organizationData.filter((org) =>
+      (
+        org.companyName.toLowerCase() +
+        org.contactPersonName.toLowerCase() +
+        org.contactPhone.toLowerCase() +
+        org.contactEmail.toLowerCase() +
+        org.short_code.toString().toLowerCase()
+      ).includes(value.toLowerCase())
+    );
+    setLastWeekOrganizationData(filteredData);
+  };
+
   return (
     <Layout>
       <Content style={{ padding: "0 50px", marginTop: 64 }}>
         <div style={{ background: "#fff", padding: 24, minHeight: 380 }}>
           <h2>Developer Portal Analytics</h2>
+
           <Row gutter={16}>
             <Col span={24}>
               <Card>
@@ -302,9 +360,25 @@ const AnalyticsPage = () => {
               </Card>
             </Col>
           </Row>
-
+          <br />
           <div style={{ marginTop: 24 }}>
-            <h2>User's Data</h2>
+            <Row gutter={16} align="middle">
+              <Col span={12}>
+                <h2 style={{ color: "#aaa" }}>User's Data</h2>
+              </Col>
+              <Col span={12}>
+                <Search
+                  placeholder="Search user data"
+                  allowClear
+                  enterButton={<SearchOutlined style={{ color: "green" }} />}
+                  onSearch={filterUserData}
+                  style={{ marginBottom: 16, width: "100%" }}
+                  enterButtonStyle={{ background: "green", border: "none" }}
+                />
+              </Col>
+            </Row>
+            <hr />
+            <br />
             <Table
               dataSource={lastWeekUserData.map((record, index) => ({
                 ...record,
@@ -322,13 +396,33 @@ const AnalyticsPage = () => {
                   fileName="users_data.csv"
                 />
               )}
+              onChange={(pagination, filters, sorter, extra) => {
+                console.log("params", pagination, filters, sorter, extra);
+              }}
             />
 
             {/* <Table dataSource={lastWeekUserData} columns={userColumns} /> */}
           </div>
 
           <div style={{ marginTop: 24 }}>
-            <h2>OrganizationData's Data</h2>
+            <Row gutter={16} align="top">
+              <Col span={12}>
+                <h2 style={{ color: "#aaa" }}>OrganizationData's Data</h2>
+              </Col>
+              <Col span={12}>
+                <Search
+                  placeholder="Search organization data"
+                  allowClear
+                  enterButton={<SearchOutlined style={{ color: "green" }} />}
+                  onSearch={filterOrganizationData}
+                  style={{ marginBottom: 16, width: "100%" }}
+                  enterButtonStyle={{ background: "green", border: "none" }}
+                />
+              </Col>
+            </Row>
+            <hr />
+            <br />
+
             <Table
               dataSource={lastWeekOrganizationData.map((record, index) => ({
                 ...record,
@@ -346,6 +440,9 @@ const AnalyticsPage = () => {
                   fileName="organization_data.csv"
                 />
               )}
+              onChange={(pagination, filters, sorter, extra) => {
+                console.log("params", pagination, filters, sorter, extra);
+              }}
             />
           </div>
         </div>
