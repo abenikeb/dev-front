@@ -1,18 +1,15 @@
 "use client";
 import React, { useState } from "react";
-import { Editor, EditorState, convertFromRaw, convertToRaw } from "draft-js";
 import { Modal, Button } from "antd";
 import { saveFroum } from "@app/api-services/forumService";
-// import { Editor as Editors } from "react-draft-wysiwyg";
-import "draft-js/dist/Draft.css";
-import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import ReactQuill from "react-quill";
+import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import DOMPurify from "dompurify";
 
 const ForumCard = ({ data }) => {
   const [replyForum, setReplyForum] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
   const [replyContent, setReplyContent] = useState("");
 
   const [editorHtml, setEditorHtml] = useState("");
@@ -68,14 +65,15 @@ const ForumCard = ({ data }) => {
   const handleModalCancel = () => {
     setReplyForum(null);
     setModalVisible(false);
-    setEditorState(EditorState.createEmpty());
+    // setEditorState(EditorState.createEmpty());
     setReplyContent("");
   };
 
   const handleSubmit = () => {
-    const contentState = editorHtml.getCurrentContent();
-    const rawContentState = convertToRaw(contentState);
-    const content = JSON.stringify(rawContentState);
+    // const contentState = editorHtml.getCurrentContent();
+    // const rawContentState = convertToRaw(contentState);
+    // const content = JSON.stringify(rawContentState);
+    const content = editorHtml;
 
     const forum = {
       id: replyForum._id,
@@ -115,12 +113,13 @@ const ForumCard = ({ data }) => {
                     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                   }}
                 >
-                  <Editor
+                  <div dangerouslySetInnerHTML={{ __html: reply.message }} />
+                  {/* <Editor
                     editorState={EditorState.createWithContent(
                       convertFromRaw(JSON.parse(reply.message))
                     )}
                     readOnly={true}
-                  />
+                  /> */}
                 </div>
               </li>
             ))}
@@ -238,12 +237,23 @@ const ForumCard = ({ data }) => {
               </div>
               <hr />
               <div className="py-3 px-7">
-                <Editor
+                {/* <div dangerouslySetInnerHTML={{ __html: forum.content }} /> */}
+                <ReactQuill
+                  value={forum.content}
+                  readOnly={true}
+                  theme={"bubble"}
+                />
+                {/* <div
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(forum.content),
+                  }}
+                /> */}
+                {/* <Editor
                   editorState={EditorState.createWithContent(
                     convertFromRaw(JSON.parse(forum.content))
                   )}
                   readOnly={true}
-                />
+                /> */}
 
                 {renderReplySection(forum)}
                 <div className="mt-10 w-32">
@@ -275,22 +285,6 @@ const ForumCard = ({ data }) => {
             modules={modules}
             formats={formats}
           />
-          {/* <Editors
-            editorState={editorState}
-            onEditorStateChange={setEditorState}
-            toolbar={{
-              inline: { inDropdown: true },
-              list: { inDropdown: true },
-              textAlign: { inDropdown: true },
-              link: { inDropdown: true },
-              history: { inDropdown: true },
-              blockType: { inDropdown: true },
-              emoji: { inDropdown: true },
-              // You can add other options here as needed
-            }}
-            wrapperClassName="w-full h-full border border-gray-500 rounded-md"
-            editorClassName="bg-white p-2"
-          /> */}
 
           <div className="modal-action">
             <form method="dialog">

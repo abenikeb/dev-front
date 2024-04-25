@@ -2,25 +2,29 @@
 import React, { useEffect, useState } from "react";
 import ForumCard from "@components/Dashboard/Forum";
 import { saveFroum, getForums } from "@app/api-services/forumService";
-import { EditorState, convertToRaw, convertFromRaw } from "draft-js";
-// import { Editor } from "react-draft-wysiwyg";
-import Editor from "draft-js-plugins-editor";
-import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { getUserData } from "@app/api-services/authService";
-import "draft-js/dist/Draft.css";
 import createToolbarPlugin from "draft-js-static-toolbar-plugin";
 import "draft-js-static-toolbar-plugin/lib/plugin.css";
-import ReactQuill from "react-quill";
+import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-
-const toolbarPlugin = createToolbarPlugin();
-const { Toolbar } = toolbarPlugin;
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const Forum = () => {
   const [editorHtml, setEditorHtml] = useState("");
 
   const handleChange = (html) => {
     setEditorHtml(html);
+  };
+
+  const handleForumSubmit = (e) => {
+    e.preventDefault();
+
+    const newForumData = {
+      ...forumData,
+      content: editorHtml,
+    };
+    doSubmit(newForumData);
+    setViewModal(false);
   };
 
   const modules = {
@@ -60,20 +64,6 @@ const Forum = () => {
     "video",
     "code", // Added 'code' format
   ];
-
-  // const [editorState, setEditorState] = useState(EditorState.createEmpty());
-
-  // const handleEditorChange = (newEditorState) => {
-  //   setEditorState(newEditorState);
-  // };
-
-  // const [editorState, setEditorState] = useState(() =>
-  //   EditorState.createEmpty()
-  // );
-
-  // const handleEditorChange = (state) => {
-  //   setEditorState(state);
-  // };
 
   const [viewModal, setViewModal] = useState(false);
   const [forumUpData, setForumUpData] = useState([]);
@@ -143,18 +133,6 @@ const Forum = () => {
     saveFroum(forum);
   };
 
-  const handleForumSubmit = (e) => {
-    e.preventDefault();
-    const contentState = editorHtml.getCurrentContent();
-    const contentRaw = convertToRaw(contentState);
-    const newForumData = {
-      ...forumData,
-      content: JSON.stringify(contentRaw),
-    };
-    doSubmit(newForumData);
-    setViewModal(false);
-  };
-
   return (
     <section className="flex w-full flex-col items-center justify-start">
       {/* SERACH SECTION */}
@@ -222,27 +200,6 @@ const Forum = () => {
               formats={formats}
             />
 
-            {/* <Editor
-              editorState={editorState}
-              onChange={handleEditorChange}
-              plugins={[toolbarPlugin]}
-            /> */}
-            {/* <Editor
-              editorState={editorState}
-              onEditorStateChange={handleEditorChange}
-              toolbar={{
-                inline: { inDropdown: true },
-                list: { inDropdown: true },
-                textAlign: { inDropdown: true },
-                link: { inDropdown: true },
-                history: { inDropdown: true },
-                blockType: { inDropdown: true },
-                emoji: { inDropdown: true },
-                // You can add other options here as needed
-              }}
-              wrapperClassName="w-full h-full border border-gray-500 rounded-md"
-              editorClassName="bg-white p-2"
-            /> */}
             <button type="submit" className="btn bg-lime-500 text-white">
               POST
             </button>
