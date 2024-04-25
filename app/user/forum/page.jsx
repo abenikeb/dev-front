@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import ForumCard from "@components/Dashboard/Forum";
 import { saveFroum, getForums } from "@app/api-services/forumService";
 import { getUserData } from "@app/api-services/authService";
-import "draft-js-static-toolbar-plugin/lib/plugin.css";
+
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
