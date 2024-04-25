@@ -83,7 +83,8 @@ const AnalyticsPage = () => {
 
     const lastWeekUserData = userData.filter((item) => {
       const createdAtDate = new Date(item.createdAt);
-      return createdAtDate >= oneWeekAgo;
+      // return createdAtDate >= oneWeekAgo;
+      return createdAtDate;
     });
 
     const lastWeekOrganizationData = organizationData.filter((item) => {

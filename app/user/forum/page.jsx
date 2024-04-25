@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import ForumCard from "@components/Dashboard/Forum";
 import { saveFroum, getForums } from "@app/api-services/forumService";
 import { getUserData } from "@app/api-services/authService";
-
+import { message } from "antd";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -15,15 +15,35 @@ const Forum = () => {
     setEditorHtml(html);
   };
 
-  const handleForumSubmit = (e) => {
+  const handleForumSubmit = async (e) => {
     e.preventDefault();
+
+    setIsSubmit(true);
 
     const newForumData = {
       ...forumData,
       content: editorHtml,
     };
-    doSubmit(newForumData);
-    setViewModal(false);
+
+    try {
+      // Assuming doSubmit is an asynchronous function
+      doSubmit(newForumData);
+
+      // Clear the input fields
+      setForumData({ ...forumData, title: "", content: "" });
+
+      // Close the modal
+      document.getElementById("my_modal_5").close();
+
+      // Show success message
+      message.success("Forum submitted successfully!");
+
+      setViewModal(false);
+    } catch (error) {
+      message.error("Something went wrong!");
+
+      console.error("Submission failed:", error);
+    }
   };
 
   const modules = {
@@ -65,6 +85,7 @@ const Forum = () => {
   ];
 
   const [viewModal, setViewModal] = useState(false);
+  const [isSubmit, setIsSubmit] = useState(false);
   const [forumUpData, setForumUpData] = useState([]);
   const [forumData, setForumData] = useState({
     title: "",
@@ -130,6 +151,7 @@ const Forum = () => {
     let x = newForum.concat(forum);
     setForumUpData(x);
     saveFroum(forum);
+    setIsSubmit(false);
   };
 
   return (
@@ -199,7 +221,11 @@ const Forum = () => {
               formats={formats}
             />
 
-            <button type="submit" className="btn bg-lime-500 text-white">
+            <button
+              disabled={isSubmit}
+              type="submit"
+              className="btn bg-lime-500 text-white"
+            >
               POST
             </button>
           </form>
