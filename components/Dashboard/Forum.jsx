@@ -1,11 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import { Modal, Button } from "antd";
 import { saveFroum } from "@app/api-services/forumService";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-import DOMPurify from "dompurify";
 
 const ForumCard = ({ data }) => {
   const [replyForum, setReplyForum] = useState(null);
