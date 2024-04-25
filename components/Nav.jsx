@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { Dropdown, Menu, Button } from "antd";
+
 import {
   UserOutlined,
   BellOutlined,
@@ -99,10 +100,8 @@ const Nav = () => {
   const handleSettingsMenuClick = (e) => {
     if (e.key === "profile") {
       router.push("/user/profile");
-    } else if (e.key === "settings") {
-      // router.push("/user/settings");
-      router.push("/user/home");
     }
+
     setSettingsDropdownVisible(false);
   };
 
@@ -131,6 +130,13 @@ const Nav = () => {
       {/* <Menu.Item key="settings" className="mt-2 pl-5 font-semibold">
         <Link href="/user/home">Settings</Link>
       </Menu.Item> */}
+      <Menu.Item
+        key="settings"
+        className="mt-2 pl-5 font-semibold"
+        icon={<UserOutlined />}
+      >
+        <Link href="/user/analytics">Users Settings</Link>
+      </Menu.Item>
     </Menu>
   );
 
