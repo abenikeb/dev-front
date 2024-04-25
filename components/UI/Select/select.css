@@ -1,0 +1,4 @@
+.input-style {
+  @apply select select-bordered;
+  width: 140%;
+}

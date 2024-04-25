@@ -1,0 +1,41 @@
+.card-container {
+  @apply card w-full bg-gray-50 shadow-sm;
+}
+
+.large-card-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: rgb(28, 28, 28);
+}
+
+.card-body-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.card-body-wrap h2 {
+  font-weight: bold;
+  font-size: 1.4em;
+  color: rgb(28, 28, 28);
+  margin-bottom: 7px;
+}
+
+.card-sub-title {
+  font-weight: 400;
+  font-size: 0.9em;
+  color: rgb(61, 60, 60);
+}
+
+.sales-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+}
+
+.sales-wrap p {
+  font-weight: bold;
+  font-size: 1.4em;
+  color: rgb(28, 28, 28);
+}

@@ -1,0 +1,4 @@
+.text-area-style {
+  @apply textarea textarea-bordered h-24;
+  width: 140%;
+}

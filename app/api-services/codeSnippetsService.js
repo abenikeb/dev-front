@@ -1,0 +1,5651 @@
+/** @format */
+
+import _ from "lodash";
+import * as _env from "./httpConstant";
+import axios from "@lib/configs/axios-instance";
+
+const urlEndpoints = _env.API_END_POINT;
+
+const codes = [
+  // H5 INTEGRATION START
+  {
+    id: 1,
+    name: "Web Payment (H5) integration",
+    value: [
+      {
+        id: 1,
+        name: "ApplyFabricToken",
+        description: `The fabric token is the first phase in the payment process, which you will provide in order to obtain a token from our server and submit an application to create an order.`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+import json
+import urllib3
+
+urllib3.disable_warnings()
+class ApplyFabricTokenService:
+    BASE_URL = None;
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    def __init__(self,BASE_URL,fabricAppId,appSecret,merchantAppId) :
+        self.BASE_URL = BASE_URL
+        self.fabricAppId = fabricAppId
+        self.appSecret = appSecret
+        self.merchantAppId = merchantAppId
+    
+    def applyFabricToken(self):
+        headers = {
+        "Content-Type": "application/json",
+        "X-APP-Key": self.fabricAppId
+        }
+        payload = {
+              "appSecret": self.appSecret
+        }
+        data=json.dumps(payload)
+        authToken = requests.post(url=self.BASE_URL+"/payment/v1/token",headers=headers,data=data,verify=False)
+        return authToken.json()`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const config = require("../config/config");
+var request = require("request");
+
+function applyFabricToken() {
+  return new Promise((resolve, reject) => {
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/token",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify({
+        appSecret: config.appSecret,
+      }),
+    };
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+}
+
+module.exports = applyFabricToken;`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Mvc;
+            using System.Net.Http.Headers;
+            using Demo_Project.Config;
+            using System.Text.Json.Serialization;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class ApplyFabricTokenService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<String> PostAsync()
+                    {
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+            
+                        var values = new Dictionary<string, string>
+                         {
+                              { "appSecret", Config.Config.appSecrete }
+                         };
+                        var content = new FormUrlEncodedContent(values);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+            
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/token/", content);
+            
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        return responseString;
+                    }
+                }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: ` <?php
+            class ApplyFabricToken
+            {
+          
+              public $BASE_URL;
+              public $fabricAppId;
+              public $appSecret;
+              public $merchantAppId;
+          
+              function __construct($BASE_URL, $fabricAppId, $appSecret, $merchantAppId)
+              {
+                $this->BASE_URL = $BASE_URL;
+                $this->fabricAppId = $fabricAppId;
+                $this->appSecret = $appSecret;
+                $this->merchantAppId = $merchantAppId;
+              }
+              /**
+               * @Purpose: Apply fabric token generated by et-server
+               *
+               * @Param: no parameters needed it takes the fabricAppId and the appSecrete from the constructor of class ApplyFabricToken
+               * @Return: authToken
+               */
+              public function applyFabricToken()
+              {
+                $ch = curl_init();
+          
+                $headers = array(
+                  "Content-Type: application/json",
+                  "X-APP-Key: " . $this->fabricAppId
+                );
+          
+                curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . "/payment/v1/token");
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+          
+                $payload =  array(
+                  "appSecret" => $this->appSecret
+                );
+          
+                //print_r(json_encode($payload));exit;
+                $data = json_encode($payload);
+          
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+          
+          
+                // Timeout in seconds
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+          
+                $authToken = curl_exec($ch);
+          
+                return $authToken;
+              }
+            }
+          `,
+          },
+        ],
+      },
+
+      {
+        id: 2,
+        name: "CreateOrder",
+        description: `CreateOrder is the second process on payment integration, it create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        print(rawRequest)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+          {
+            id: 2,
+            name: "Node JS",
+            value: `var request = require("request");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+const applyFabricToken = require("./applyFabricTokenService");
+
+exports.createOrder = async (req, res) => {
+  let title = req.body.title;
+  let amount = req.body.amount;
+  let applyFabricTokenResult = await applyFabricToken();
+  let fabricToken = applyFabricTokenResult.token;
+  let createOrderResult = await exports.requestCreateOrder(
+    fabricToken,
+    title,
+    amount
+  );
+  let prepayId = createOrderResult.biz_content.prepay_id;
+  let rawRequest = createRawRequest(prepayId);
+  res.send(rawRequest);
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount) => {
+  return new Promise((resolve) => {
+    let reqObject = createRequestObject(title, amount);
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/merchant/preOrder",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+        Authorization: fabricToken,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify(reqObject),
+    };
+    request(options, (error, response) => {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+};
+
+function createRequestObject(title, amount) {
+  let req = {
+    timestamp: tools.createTimeStamp(),
+    nonce_str: tools.createNonceStr(),
+    method: "payment.preorder",
+    version: "1.0",
+  };
+  let biz = {
+    notify_url: "https://www.google.com",
+    trade_type: "InApp",
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    merch_order_id: createMerchantOrderId(),
+    title: title,
+    total_amount: amount,
+    trans_currency: "ETB",
+    timeout_express: "120m",
+    business_type: "BuyGoods",
+    payee_identifier: config.merchantCode,
+    payee_identifier_type: "04",
+    payee_type: "5000",
+  };
+  req.biz_content = biz;
+  req.sign = tools.signRequestObject(req);
+  req.sign_type = "SHA256WithRSA";
+  return req;
+}
+
+function createMerchantOrderId() {
+  return new Date().getTime() + "";
+}
+
+function createRawRequest(prepayId) {
+  let map = {
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    nonce_str: tools.createNonceStr(),
+    prepay_id: prepayId,
+    timestamp: tools.createTimeStamp(),
+  };
+  let sign = tools.signRequestObject(map);
+  // order by ascii in array
+  let rawRequest = [
+    "appid=" + map.appid,
+    "merch_code=" + map.merch_code,
+    "nonce_str=" + map.nonce_str,
+    "prepay_id=" + map.prepay_id,
+    "timestamp=" + map.timestamp,
+    "sign=" + sign,
+    "sign_type=SHA256WithRSA",
+  ].join("&");
+  return rawRequest;
+}`,
+          },
+          {
+            id: 3,
+            name: "C#",
+            value: `using Demo_Project.Config;
+            using Demo_Project.Models;
+            using Demo_Project.Service;
+            using Microsoft.AspNetCore.DataProtection.KeyManagement;
+            using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Http.HttpResults;
+            using Microsoft.AspNetCore.Mvc;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            using System.Net.Http.Headers;
+            using System.Text;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class CreateOrderService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<string> PostAsync([FromBody] Request request)
+                    {
+                        Console.WriteLine(request);
+                        
+                        string title = request.Title;
+                        string amount = request.Amount;
+                        Console.WriteLine("Title "+title + " Amount "+amount);      
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        ApplyFabricTokenService applyFabricTokenService = new ApplyFabricTokenService();
+                        string applyFabricToken = await applyFabricTokenService.PostAsync();
+                        dynamic data = JObject.Parse(applyFabricToken);
+                        string token = data.token;
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        var values = createRequestObject(title, amount);
+                        Console.WriteLine(values);
+                        var jsonValues = JsonConvert.SerializeObject(values);
+                        var content = new StringContent(jsonValues, Encoding.UTF8, "application/json");
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/merchant/preOrder", content);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        dynamic responseData = JObject.Parse(responseString);
+                        string prePayId = responseData.biz_content.prepay_id;
+                        return createRawRequest(prePayId);
+            
+                    }
+                    public static Dictionary<String, object> createRequestObject(string title, string amount)
+                    {
+                        var biz = new Dictionary<string, string>{
+                                { "trans_currency","ETB"},
+                                { "total_amount",amount},
+                                { "merch_order_id",Service.Tools.createTimeStamp()},
+                                { "appid",Config.Config.merchantAppId},
+                                { "merch_code",Config.Config.merchantCode},
+                                { "timeout_express","120m"},
+                                { "trade_type","InApp"},
+                                { "notify_url","https://www.google.com"},
+                                { "title",title},
+                                { "business_type","BuyGoods"},
+                                { "payee_identifier_type","04"},
+                                { "payee_identifier",Config.Config.merchantCode},
+                                { "payee_type","5000"}
+                            };
+                        var req = new Dictionary<string, object>
+                        {
+                            {"nonce_str",Service.Tools.createNonceStr()},
+                            {"biz_content" , biz },
+                            {"method","payment.preorder"},
+                            {"version", "1.0"},
+                            {"timestamp",Service.Tools.createTimeStamp() }
+                    }; 
+                        req.Add("sign", Service.Tools.sign(req));
+                        req.Add("sign_type", "SHA256WithRSA");
+                        return req;
+                    }
+            
+                    public static string createRawRequest(string prepayId)
+                    {
+                        var maps = new Dictionary<string, string>
+                        {
+                            {"appid",Config.Config.merchantAppId },
+                            {"merch_code",Config.Config.merchantCode },
+                            {"nonce_str",Tools.createNonceStr() },
+                            {"prepay_id",prepayId },
+                            {"timestamp",Tools.createTimeStamp() },
+                            {"sign_type","SHA256withRSA" }
+            
+                        };
+                        string[] raw = { };
+                        Dictionary<string, string>.KeyCollection keys = maps.Keys;
+                        foreach (string key in keys)
+                        {
+                            raw = raw.Append(key + "=" + maps[key]).ToArray();
+            
+                        }
+                        Array.Sort(raw);
+                        string sorted = string.Join("&", raw);
+            
+                        return sorted;
+                    }
+            }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('applyFabricTokenService.php');
+            require_once('./utils/tool.php');
+            require_once('./config/env.php');
+            
+            class CreateOrderService
+            {
+                public $req;
+                public $BASE_URL;
+                public $fabricAppId;
+                public $appSecret;
+                public $merchantAppId;
+                public $merchantCode;
+                public $notify_path;
+            
+                function __construct($baseUrl, $req, $fabricAppId, $appSecret, $merchantAppId, $merchantCode)
+                {
+                    $this->BASE_URL = $baseUrl;
+                    $this->req = $req;
+                    $this->fabricAppId = $fabricAppId;
+                    $this->appSecret = $appSecret;
+                    $this->merchantAppId = $merchantAppId;
+                    $this->merchantCode = $merchantCode;
+                    $this->notify_path = "http://"  . $_SERVER['SERVER_NAME'];
+                }
+                /**
+                 * @Purpose: Creating Order
+                 *
+                 * @Param: no parameters it takes from the constructor
+                 * @Return: rawRequest|String
+                 */
+                function createOrder()
+                {
+                    $title = $this->req->title;
+                    $amount = $this->req->amount;
+            
+                    $applyFabricTokenResult = new ApplyFabricToken(
+                        $this->BASE_URL,
+                        $this->fabricAppId,
+                        $this->appSecret,
+                        $this->merchantAppId
+                    );
+            
+                    $result = json_decode($applyFabricTokenResult->applyFabricToken());
+            
+                    $fabricToken = $result->token;
+            
+                    $createOrderResult = $this->requestCreateOrder($fabricToken, $title, $amount);
+            
+                    $prepayId = json_decode($createOrderResult)->biz_content->prepay_id;
+            
+                    $rawRequest = $this->createRawRequest($prepayId);
+            
+                    echo trim((string)$rawRequest);
+                }
+            
+                /**
+                 * @Purpose: Requests CreateOrder
+                 *
+                 * @Param: fabricToken|String title|string amount|string
+                 * @Return: String | Boolean
+                 */
+            
+                function requestCreateOrder($fabricToken, $title, $amount)
+                {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . '/payment/v1/merchant/preOrder');
+                    curl_setopt($ch, CURLOPT_POST, 1);
+            
+                    // Header parameters
+                    $headers = array(
+                        "Content-Type: application/json",
+                        "X-APP-Key: " . $this->fabricAppId,
+                        "Authorization: " . $fabricToken
+                    );
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            
+                    // Body parameters
+                    $payload = $this->createRequestObject($title, $amount);
+            
+                    $data = $payload;
+            
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+            
+                    $server_output = curl_exec($ch);
+            
+                    curl_close($ch);
+            
+                    return $server_output;
+                }
+                /**
+                 * @Purpose: Creating a new merchantOrderId
+                 *
+                 * @Param: no parameters
+                 * @Return: returns a string format of time (UTC)
+                 */
+                function createMerchantOrderId_()
+                {
+                    return (string)time();
+                }
+                /**
+                 * @Purpose: Creating Request Object
+                 *
+                 * @Param: title|String and amount|String
+                 * @Return: Json encoded string
+                 */
+                function createRequestObject($title, $amount)
+                {
+                    $req = array(
+                        'nonce_str' => createNonceStr(),
+                        'method' => 'payment.preorder',
+                        'timestamp' => createTimeStamp(),
+                        'version' => '1.0',
+                        'biz_content' => [],
+                    );
+            
+                    $biz = array(
+                        // 'notify_url' => 'https://www.google.com',
+                        'notify_url' => $this->notify_path . '/api/payment.php', // set your notify end point
+                        'business_type' => 'BuyGoods',
+                        'trade_type' => 'InApp',
+                        'appid' => $this->merchantAppId,
+                        'merch_code' => $this->merchantCode,
+                        'merch_order_id' => $this->createMerchantOrderId_(),
+                        'title' => $title,
+                        'total_amount' => $amount,
+                        'trans_currency' => 'ETB',
+                        'timeout_express' => '120m',
+                        'payee_identifier' => '220311',
+                        'payee_identifier_type' => '04',
+                        'payee_type' => '5000',
+                        // 'redirect_url' => $this->path . '/app/product_list.html'
+                    );
+            
+                    $req['biz_content'] = $biz;
+                    $req['sign_type'] = 'SHA256WithRSA';
+            
+                    $req['sign'] = sign($req);
+            
+                    return json_encode($req);
+                }
+                /**
+                 * @Purpose: Create a rawRequest string for H5 page to start pay
+                 *
+                 * @Param: prepayId returned from the createRequestObject
+                 * @Return: rawRequest|string
+                 */
+                function createRawRequest($prepayId)
+                {
+                    $maps = array(
+                        "appid" => $this->merchantAppId,
+                        "merch_code" => $this->merchantCode,
+                        "nonce_str" => createNonceStr(),
+                        "prepay_id" => $prepayId,
+                        "timestamp" => createTimeStamp(),
+                        "sign_type" => "SHA256WithRSA"
+                    );
+                    
+                    foreach ($maps as $map => $m) {
+                            $rawRequest .= $map . '=' . $m."&";
+                    }
+                    $sign = sign($maps);
+                    // order by ascii in array
+                    $rawRequest = $rawRequest.'sign='. $sign;
+            
+                    return $rawRequest;
+                }
+            }
+            `,
+          },
+        ],
+      },
+
+      {
+        id: 3,
+        name: "Checkout",
+        description: `Checkout is the third process on payment integration, after create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+          {
+            id: 2,
+            name: "Node JS",
+            value: `var request = require("request");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+const applyFabricToken = require("./applyFabricTokenService");
+
+exports.createOrder = async (req, res) => {
+  let title = req.body.title;
+  let amount = req.body.amount;
+  let applyFabricTokenResult = await applyFabricToken();
+  let fabricToken = applyFabricTokenResult.token;
+  let createOrderResult = await exports.requestCreateOrder(
+    fabricToken,
+    title,
+    amount
+  );
+  let prepayId = createOrderResult.biz_content.prepay_id;
+  let rawRequest = createRawRequest(prepayId);
+  res.send(rawRequest);
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount) => {
+  return new Promise((resolve) => {
+    let reqObject = createRequestObject(title, amount);
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/merchant/preOrder",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+        Authorization: fabricToken,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify(reqObject),
+    };
+    request(options, (error, response) => {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+};
+
+function createRequestObject(title, amount) {
+  let req = {
+    timestamp: tools.createTimeStamp(),
+    nonce_str: tools.createNonceStr(),
+    method: "payment.preorder",
+    version: "1.0",
+  };
+  let biz = {
+    notify_url: "https://www.google.com",
+    trade_type: "InApp",
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    merch_order_id: createMerchantOrderId(),
+    title: title,
+    total_amount: amount,
+    trans_currency: "ETB",
+    timeout_express: "120m",
+    business_type: "BuyGoods",
+    payee_identifier: config.merchantCode,
+    payee_identifier_type: "04",
+    payee_type: "5000",
+  };
+  req.biz_content = biz;
+  req.sign = tools.signRequestObject(req);
+  req.sign_type = "SHA256WithRSA";
+  return req;
+}
+
+function createMerchantOrderId() {
+  return new Date().getTime() + "";
+}
+
+function createRawRequest(prepayId) {
+  let map = {
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    nonce_str: tools.createNonceStr(),
+    prepay_id: prepayId,
+    timestamp: tools.createTimeStamp(),
+  };
+  let sign = tools.signRequestObject(map);
+  // order by ascii in array
+  let rawRequest = [
+    "appid=" + map.appid,
+    "merch_code=" + map.merch_code,
+    "nonce_str=" + map.nonce_str,
+    "prepay_id=" + map.prepay_id,
+    "timestamp=" + map.timestamp,
+    "sign=" + sign,
+    "sign_type=SHA256WithRSA",
+  ].join("&");
+  return rawRequest;
+}`,
+          },
+          {
+            id: 3,
+            name: "C#",
+            value: `using Demo_Project.Config;
+            using Demo_Project.Models;
+            using Demo_Project.Service;
+            using Microsoft.AspNetCore.DataProtection.KeyManagement;
+            using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Http.HttpResults;
+            using Microsoft.AspNetCore.Mvc;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            using System.Net.Http.Headers;
+            using System.Text;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class CreateOrderService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<string> PostAsync([FromBody] Request request)
+                    {
+                        Console.WriteLine(request);
+                        
+                        string title = request.Title;
+                        string amount = request.Amount;
+                        Console.WriteLine("Title "+title + " Amount "+amount);      
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        ApplyFabricTokenService applyFabricTokenService = new ApplyFabricTokenService();
+                        string applyFabricToken = await applyFabricTokenService.PostAsync();
+                        dynamic data = JObject.Parse(applyFabricToken);
+                        string token = data.token;
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        var values = createRequestObject(title, amount);
+                        Console.WriteLine(values);
+                        var jsonValues = JsonConvert.SerializeObject(values);
+                        var content = new StringContent(jsonValues, Encoding.UTF8, "application/json");
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/merchant/preOrder", content);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        dynamic responseData = JObject.Parse(responseString);
+                        string prePayId = responseData.biz_content.prepay_id;
+                        return createRawRequest(prePayId);
+            
+                    }
+                    public static Dictionary<String, object> createRequestObject(string title, string amount)
+                    {
+                        var biz = new Dictionary<string, string>{
+                                { "trans_currency","ETB"},
+                                { "total_amount",amount},
+                                { "merch_order_id",Service.Tools.createTimeStamp()},
+                                { "appid",Config.Config.merchantAppId},
+                                { "merch_code",Config.Config.merchantCode},
+                                { "timeout_express","120m"},
+                                { "trade_type","InApp"},
+                                { "notify_url","https://www.google.com"},
+                                { "title",title},
+                                { "business_type","BuyGoods"},
+                                { "payee_identifier_type","04"},
+                                { "payee_identifier",Config.Config.merchantCode},
+                                { "payee_type","5000"}
+                            };
+                        var req = new Dictionary<string, object>
+                        {
+                            {"nonce_str",Service.Tools.createNonceStr()},
+                            {"biz_content" , biz },
+                            {"method","payment.preorder"},
+                            {"version", "1.0"},
+                            {"timestamp",Service.Tools.createTimeStamp() }
+                    }; 
+                        req.Add("sign", Service.Tools.sign(req));
+                        req.Add("sign_type", "SHA256WithRSA");
+                        return req;
+                    }
+            
+                    public static string createRawRequest(string prepayId)
+                    {
+                        var maps = new Dictionary<string, string>
+                        {
+                            {"appid",Config.Config.merchantAppId },
+                            {"merch_code",Config.Config.merchantCode },
+                            {"nonce_str",Tools.createNonceStr() },
+                            {"prepay_id",prepayId },
+                            {"timestamp",Tools.createTimeStamp() },
+                            {"sign_type","SHA256withRSA" }
+            
+                        };
+                        string[] raw = { };
+                        Dictionary<string, string>.KeyCollection keys = maps.Keys;
+                        foreach (string key in keys)
+                        {
+                            raw = raw.Append(key + "=" + maps[key]).ToArray();
+            
+                        }
+                        Array.Sort(raw);
+                        string sorted = string.Join("&", raw);
+            
+                        return sorted;
+                    }
+            }
+            }
+            `,
+          },
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('./service/createOrderService.php');
+            require_once('./service/applyFabricTokenService.php');
+            require_once('./config/env.php');
+            
+            header('content-type:application/json');
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Methods: *");
+            header("Access-Control-Allow-Methods: PUT, GET,DELETE, POST");
+            header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+            
+            $METHOD = $_SERVER['REQUEST_METHOD'];
+            $PATH = $_SERVER['REQUEST_URI'];
+            $REQUEST_PARAMS = json_decode(file_get_contents('php://input'));
+            
+            $createOrderService = new CreateOrderService(
+              $baseUrl = $ENV_Variables['baseUrl'],
+              $req = $REQUEST_PARAMS,
+              $fabricAppId = $ENV_Variables['fabricAppId'],
+              $appSecret = $ENV_Variables['appSecret'],
+              $merchantAppId = $ENV_Variables['merchantAppId'],
+              $merchantCode = $ENV_Variables['merchantCode']
+            );
+            
+            switch ($METHOD) {
+              case 'POST':
+                if ($PATH == "/create/order") {
+                  $createOrderService->createOrder();
+                } else if ($PATH == "/auth/token") {
+                  applyFabricToken($REQUEST_PARAMS);
+                }
+                break;
+            
+              default:
+                echo "WELCOME TO PAYMENT PAGE!";
+                exit;
+            }
+            `,
+          },
+        ],
+      },
+
+      {
+        id: 4,
+        name: "QueryOrder",
+        description: `QueryOrder is the forth process on payment integration, after create a transaction if you are not redeived notification, you can request callback with this interface`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `H5 -> QueryOrder -> Python Goes Here!`,
+          },
+          {
+            id: 2,
+            name: "Node JS",
+            value: `H5 -> QueryOrder -> JS Goes Here!`,
+          },
+          {
+            id: 3,
+            name: "C#",
+            value: `H5 -> QueryOrder -> C# Goes Here!`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `H5 -> QueryOrder -> PHP Goes Here!`,
+          },
+        ],
+      },
+    ],
+  },
+  // H5 INTEGRATION END
+
+  // MINI APP INTEGRATION START
+
+  {
+    id: 2,
+    name: "Native (Mini App) integration",
+    value: [
+      {
+        id: 1,
+        name: "ApplyFabricToken",
+        description: ` ApplyFabricToken is the initial step in the payment integration process where a token is obtained and added to a request for creating an order.`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+import json
+import urllib3
+
+urllib3.disable_warnings()
+class ApplyFabricTokenService:
+    BASE_URL = None;
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    def __init__(self,BASE_URL,fabricAppId,appSecret,merchantAppId) :
+        self.BASE_URL = BASE_URL
+        self.fabricAppId = fabricAppId
+        self.appSecret = appSecret
+        self.merchantAppId = merchantAppId
+    
+    def applyFabricToken(self):
+        headers = {
+        "Content-Type": "application/json",
+        "X-APP-Key": self.fabricAppId
+        }
+        payload = {
+              "appSecret": self.appSecret
+        }
+        data=json.dumps(payload)
+        authToken = requests.post(url=self.BASE_URL+"/payment/v1/token",headers=headers,data=data,verify=False)
+        print(authToken.json())
+        return authToken.json()`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const config = require("../config/config");
+var request = require("request");
+
+function applyFabricToken() {
+  return new Promise((resolve, reject) => {
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/token",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify({
+        appSecret: config.appSecret,
+      }),
+    };
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+}
+
+module.exports = applyFabricToken;
+`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Mvc;
+            using System.Net.Http.Headers;
+            using Demo_Project.Config;
+            using System.Text.Json.Serialization;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class ApplyFabricTokenService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<String> PostAsync()
+                    {
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+            
+                        var values = new Dictionary<string, string>
+                         {
+                              { "appSecret", Config.Config.appSecrete }
+                         };
+                        var content = new FormUrlEncodedContent(values);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+            
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/token/", content);
+            
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        return responseString;
+                    }
+                }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: ` <?php
+            class ApplyFabricToken
+            {
+          
+              public $BASE_URL;
+              public $fabricAppId;
+              public $appSecret;
+              public $merchantAppId;
+          
+              function __construct($BASE_URL, $fabricAppId, $appSecret, $merchantAppId)
+              {
+                $this->BASE_URL = $BASE_URL;
+                $this->fabricAppId = $fabricAppId;
+                $this->appSecret = $appSecret;
+                $this->merchantAppId = $merchantAppId;
+              }
+              /**
+               * @Purpose: Apply fabric token generated by et-server
+               *
+               * @Param: no parameters needed it takes the fabricAppId and the appSecrete from the constructor of class ApplyFabricToken
+               * @Return: authToken
+               */
+              public function applyFabricToken()
+              {
+                $ch = curl_init();
+          
+                $headers = array(
+                  "Content-Type: application/json",
+                  "X-APP-Key: " . $this->fabricAppId
+                );
+          
+                curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . "/payment/v1/token");
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+          
+                $payload =  array(
+                  "appSecret" => $this->appSecret
+                );
+          
+                //print_r(json_encode($payload));exit;
+                $data = json_encode($payload);
+          
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+          
+          
+                // Timeout in seconds
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+          
+                $authToken = curl_exec($ch);
+          
+                return $authToken;
+              }
+            }
+          `,
+          },
+        ],
+      },
+      {
+        id: 2,
+        name: "CreateOrder",
+        description: `CreateOrder is the second process on payment integration, it create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        print(rawRequest)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `var request = require("request");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+const applyFabricToken = require("./applyFabricTokenService");
+
+exports.createOrder = async (req, res) => {
+  let title = req.body.title;
+  let amount = req.body.amount;
+  let applyFabricTokenResult = await applyFabricToken();
+  let fabricToken = applyFabricTokenResult.token;
+  let createOrderResult = await exports.requestCreateOrder(
+    fabricToken,
+    title,
+    amount
+  );
+  let prepayId = createOrderResult.biz_content.prepay_id;
+  let rawRequest = createRawRequest(prepayId);
+  res.send(rawRequest);
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount) => {
+  return new Promise((resolve) => {
+    let reqObject = createRequestObject(title, amount);
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/merchant/preOrder",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+        Authorization: fabricToken,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify(reqObject),
+    };
+    request(options, (error, response) => {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+};
+
+function createRequestObject(title, amount) {
+  let req = {
+    timestamp: tools.createTimeStamp(),
+    nonce_str: tools.createNonceStr(),
+    method: "payment.preorder",
+    version: "1.0",
+  };
+  let biz = {
+    notify_url: "https://www.google.com",
+    trade_type: "InApp",
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    merch_order_id: createMerchantOrderId(),
+    title: title,
+    total_amount: amount,
+    trans_currency: "ETB",
+    timeout_express: "120m",
+    business_type: "BuyGoods",
+    payee_identifier: config.merchantCode,
+    payee_identifier_type: "04",
+    payee_type: "5000",
+  };
+  req.biz_content = biz;
+  req.sign = tools.signRequestObject(req);
+  req.sign_type = "SHA256WithRSA";
+  return req;
+}
+
+function createMerchantOrderId() {
+  return new Date().getTime() + "";
+}
+
+function createRawRequest(prepayId) {
+  let map = {
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    nonce_str: tools.createNonceStr(),
+    prepay_id: prepayId,
+    timestamp: tools.createTimeStamp(),
+  };
+  let sign = tools.signRequestObject(map);
+  // order by ascii in array
+  let rawRequest = [
+    "appid=" + map.appid,
+    "merch_code=" + map.merch_code,
+    "nonce_str=" + map.nonce_str,
+    "prepay_id=" + map.prepay_id,
+    "timestamp=" + map.timestamp,
+    "sign=" + sign,
+    "sign_type=SHA256WithRSA",
+  ].join("&");
+  return rawRequest;
+}
+`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Demo_Project.Config;
+            using Demo_Project.Models;
+            using Demo_Project.Service;
+            using Microsoft.AspNetCore.DataProtection.KeyManagement;
+            using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Http.HttpResults;
+            using Microsoft.AspNetCore.Mvc;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            using System.Net.Http.Headers;
+            using System.Text;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class CreateOrderService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<string> PostAsync([FromBody] Request request)
+                    {
+                        Console.WriteLine(request);
+                        
+                        string title = request.Title;
+                        string amount = request.Amount;
+                        Console.WriteLine("Title "+title + " Amount "+amount);      
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        ApplyFabricTokenService applyFabricTokenService = new ApplyFabricTokenService();
+                        string applyFabricToken = await applyFabricTokenService.PostAsync();
+                        dynamic data = JObject.Parse(applyFabricToken);
+                        string token = data.token;
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        var values = createRequestObject(title, amount);
+                        Console.WriteLine(values);
+                        var jsonValues = JsonConvert.SerializeObject(values);
+                        var content = new StringContent(jsonValues, Encoding.UTF8, "application/json");
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/merchant/preOrder", content);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        dynamic responseData = JObject.Parse(responseString);
+                        string prePayId = responseData.biz_content.prepay_id;
+                        return createRawRequest(prePayId);
+            
+                    }
+                    public static Dictionary<String, object> createRequestObject(string title, string amount)
+                    {
+                        var biz = new Dictionary<string, string>{
+                                { "trans_currency","ETB"},
+                                { "total_amount",amount},
+                                { "merch_order_id",Service.Tools.createTimeStamp()},
+                                { "appid",Config.Config.merchantAppId},
+                                { "merch_code",Config.Config.merchantCode},
+                                { "timeout_express","120m"},
+                                { "trade_type","InApp"},
+                                { "notify_url","https://www.google.com"},
+                                { "title",title},
+                                { "business_type","BuyGoods"},
+                                { "payee_identifier_type","04"},
+                                { "payee_identifier",Config.Config.merchantCode},
+                                { "payee_type","5000"}
+                            };
+                        var req = new Dictionary<string, object>
+                        {
+                            {"nonce_str",Service.Tools.createNonceStr()},
+                            {"biz_content" , biz },
+                            {"method","payment.preorder"},
+                            {"version", "1.0"},
+                            {"timestamp",Service.Tools.createTimeStamp() }
+                    }; 
+                        req.Add("sign", Service.Tools.sign(req));
+                        req.Add("sign_type", "SHA256WithRSA");
+                        return req;
+                    }
+            
+                    public static string createRawRequest(string prepayId)
+                    {
+                        var maps = new Dictionary<string, string>
+                        {
+                            {"appid",Config.Config.merchantAppId },
+                            {"merch_code",Config.Config.merchantCode },
+                            {"nonce_str",Tools.createNonceStr() },
+                            {"prepay_id",prepayId },
+                            {"timestamp",Tools.createTimeStamp() },
+                            {"sign_type","SHA256withRSA" }
+            
+                        };
+                        string[] raw = { };
+                        Dictionary<string, string>.KeyCollection keys = maps.Keys;
+                        foreach (string key in keys)
+                        {
+                            raw = raw.Append(key + "=" + maps[key]).ToArray();
+            
+                        }
+                        Array.Sort(raw);
+                        string sorted = string.Join("&", raw);
+            
+                        return sorted;
+                    }
+            }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('applyFabricTokenService.php');
+            require_once('./utils/tool.php');
+            require_once('./config/env.php');
+            
+            class CreateOrderService
+            {
+                public $req;
+                public $BASE_URL;
+                public $fabricAppId;
+                public $appSecret;
+                public $merchantAppId;
+                public $merchantCode;
+                public $notify_path;
+            
+                function __construct($baseUrl, $req, $fabricAppId, $appSecret, $merchantAppId, $merchantCode)
+                {
+                    $this->BASE_URL = $baseUrl;
+                    $this->req = $req;
+                    $this->fabricAppId = $fabricAppId;
+                    $this->appSecret = $appSecret;
+                    $this->merchantAppId = $merchantAppId;
+                    $this->merchantCode = $merchantCode;
+                    $this->notify_path = "http://"  . $_SERVER['SERVER_NAME'];
+                }
+                /**
+                 * @Purpose: Creating Order
+                 *
+                 * @Param: no parameters it takes from the constructor
+                 * @Return: rawRequest|String
+                 */
+                function createOrder()
+                {
+                    $title = $this->req->title;
+                    $amount = $this->req->amount;
+            
+                    $applyFabricTokenResult = new ApplyFabricToken(
+                        $this->BASE_URL,
+                        $this->fabricAppId,
+                        $this->appSecret,
+                        $this->merchantAppId
+                    );
+            
+                    $result = json_decode($applyFabricTokenResult->applyFabricToken());
+            
+                    $fabricToken = $result->token;
+            
+                    $createOrderResult = $this->requestCreateOrder($fabricToken, $title, $amount);
+            
+                    $prepayId = json_decode($createOrderResult)->biz_content->prepay_id;
+            
+                    $rawRequest = $this->createRawRequest($prepayId);
+            
+                    echo trim((string)$rawRequest);
+                }
+            
+                /**
+                 * @Purpose: Requests CreateOrder
+                 *
+                 * @Param: fabricToken|String title|string amount|string
+                 * @Return: String | Boolean
+                 */
+            
+                function requestCreateOrder($fabricToken, $title, $amount)
+                {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . '/payment/v1/merchant/preOrder');
+                    curl_setopt($ch, CURLOPT_POST, 1);
+            
+                    // Header parameters
+                    $headers = array(
+                        "Content-Type: application/json",
+                        "X-APP-Key: " . $this->fabricAppId,
+                        "Authorization: " . $fabricToken
+                    );
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            
+                    // Body parameters
+                    $payload = $this->createRequestObject($title, $amount);
+            
+                    $data = $payload;
+            
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+            
+                    $server_output = curl_exec($ch);
+            
+                    curl_close($ch);
+            
+                    return $server_output;
+                }
+                /**
+                 * @Purpose: Creating a new merchantOrderId
+                 *
+                 * @Param: no parameters
+                 * @Return: returns a string format of time (UTC)
+                 */
+                function createMerchantOrderId_()
+                {
+                    return (string)time();
+                }
+                /**
+                 * @Purpose: Creating Request Object
+                 *
+                 * @Param: title|String and amount|String
+                 * @Return: Json encoded string
+                 */
+                function createRequestObject($title, $amount)
+                {
+                    $req = array(
+                        'nonce_str' => createNonceStr(),
+                        'method' => 'payment.preorder',
+                        'timestamp' => createTimeStamp(),
+                        'version' => '1.0',
+                        'biz_content' => [],
+                    );
+            
+                    $biz = array(
+                        // 'notify_url' => 'https://www.google.com',
+                        'notify_url' => $this->notify_path . '/api/payment.php', // set your notify end point
+                        'business_type' => 'BuyGoods',
+                        'trade_type' => 'InApp',
+                        'appid' => $this->merchantAppId,
+                        'merch_code' => $this->merchantCode,
+                        'merch_order_id' => $this->createMerchantOrderId_(),
+                        'title' => $title,
+                        'total_amount' => $amount,
+                        'trans_currency' => 'ETB',
+                        'timeout_express' => '120m',
+                        'payee_identifier' => '220311',
+                        'payee_identifier_type' => '04',
+                        'payee_type' => '5000',
+                        // 'redirect_url' => $this->path . '/app/product_list.html'
+                    );
+            
+                    $req['biz_content'] = $biz;
+                    $req['sign_type'] = 'SHA256WithRSA';
+            
+                    $req['sign'] = sign($req);
+            
+                    return json_encode($req);
+                }
+                /**
+                 * @Purpose: Create a rawRequest string for H5 page to start pay
+                 *
+                 * @Param: prepayId returned from the createRequestObject
+                 * @Return: rawRequest|string
+                 */
+                function createRawRequest($prepayId)
+                {
+                    $maps = array(
+                        "appid" => $this->merchantAppId,
+                        "merch_code" => $this->merchantCode,
+                        "nonce_str" => createNonceStr(),
+                        "prepay_id" => $prepayId,
+                        "timestamp" => createTimeStamp(),
+                        "sign_type" => "SHA256WithRSA"
+                    );
+                    
+                    foreach ($maps as $map => $m) {
+                            $rawRequest .= $map . '=' . $m."&";
+                    }
+                    $sign = sign($maps);
+                    // order by ascii in array
+                    $rawRequest = $rawRequest.'sign='. $sign;
+            
+                    return $rawRequest;
+                }
+            }
+            `,
+          },
+        ],
+      },
+      {
+        id: 3,
+        name: "Checkout",
+        description: `Checkout is the third process on payment integration, after create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `Macle -> Checkout -> Python Goes Here!`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `Macle -> Checkout -> JS Goes Here!`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `Macle -> Checkout -> C# Goes Here!`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('./service/createOrderService.php');
+            require_once('./service/applyFabricTokenService.php');
+            require_once('./config/env.php');
+            
+            header('content-type:application/json');
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Methods: *");
+            header("Access-Control-Allow-Methods: PUT, GET,DELETE, POST");
+            header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+            
+            $METHOD = $_SERVER['REQUEST_METHOD'];
+            $PATH = $_SERVER['REQUEST_URI'];
+            $REQUEST_PARAMS = json_decode(file_get_contents('php://input'));
+            
+            $createOrderService = new CreateOrderService(
+              $baseUrl = $ENV_Variables['baseUrl'],
+              $req = $REQUEST_PARAMS,
+              $fabricAppId = $ENV_Variables['fabricAppId'],
+              $appSecret = $ENV_Variables['appSecret'],
+              $merchantAppId = $ENV_Variables['merchantAppId'],
+              $merchantCode = $ENV_Variables['merchantCode']
+            );
+            
+            switch ($METHOD) {
+              case 'POST':
+                if ($PATH == "/create/order") {
+                  $createOrderService->createOrder();
+                } else if ($PATH == "/auth/token") {
+                  applyFabricToken($REQUEST_PARAMS);
+                }
+                break;
+            
+              default:
+                echo "WELCOME TO PAYMENT PAGE!";
+                exit;
+            }
+            `,
+          },
+        ],
+      },
+
+      {
+        id: 4,
+        name: "QueryOrder",
+        description: `QueryOrder is the forth process on payment integration, after create a transaction if you are not redeived notification, you can request callback with this interface`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `Macle -> QueryOrder -> Python Goes Here!`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `Macle -> QueryOrder -> JS Goes Here!`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `Macle -> QueryOrder -> C# Goes Here!`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `Macle -> QueryOrder -> PHP Goes Here!`,
+          },
+        ],
+      },
+    ],
+  },
+
+  // MINI APP INTEGRATION END
+
+  // C2B CHECKOUT START
+  {
+    id: 3,
+    name: "Consumer-to-business WebCheckout",
+    value: [
+      {
+        id: 1,
+        name: "ApplyFabricToken",
+        description: ` ApplyFabricToken is the initial step in the payment integration process where a token is obtained and added to a request for creating an order.`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+import json
+import urllib3
+
+urllib3.disable_warnings()
+class ApplyFabricTokenService:
+    BASE_URL = None;
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    def __init__(self,BASE_URL,fabricAppId,appSecret,merchantAppId) :
+        self.BASE_URL = BASE_URL
+        self.fabricAppId = fabricAppId
+        self.appSecret = appSecret
+        self.merchantAppId = merchantAppId
+    
+    def applyFabricToken(self):
+        headers = {
+        "Content-Type": "application/json",
+        "X-APP-Key": self.fabricAppId
+        }
+        payload = {
+              "appSecret": self.appSecret
+        }
+        data=json.dumps(payload)
+        authToken = requests.post(url=self.BASE_URL+"/payment/v1/token",headers=headers,data=data,verify=False)
+        return authToken.json()`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const config = require("../config/config");
+var request = require("request");
+
+function applyFabricToken() {
+  return new Promise((resolve, reject) => {
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/token",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify({
+        appSecret: config.appSecret,
+      }),
+    };
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+}
+
+module.exports = applyFabricToken;
+`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Mvc;
+            using System.Net.Http.Headers;
+            using Demo_Project.Config;
+            using System.Text.Json.Serialization;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class ApplyFabricTokenService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<String> PostAsync()
+                    {
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+            
+                        var values = new Dictionary<string, string>
+                         {
+                              { "appSecret", Config.Config.appSecrete }
+                         };
+                        var content = new FormUrlEncodedContent(values);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+            
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/token/", content);
+            
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        return responseString;
+                    }
+                }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: ` <?php
+            class ApplyFabricToken
+            {
+          
+              public $BASE_URL;
+              public $fabricAppId;
+              public $appSecret;
+              public $merchantAppId;
+          
+              function __construct($BASE_URL, $fabricAppId, $appSecret, $merchantAppId)
+              {
+                $this->BASE_URL = $BASE_URL;
+                $this->fabricAppId = $fabricAppId;
+                $this->appSecret = $appSecret;
+                $this->merchantAppId = $merchantAppId;
+              }
+              /**
+               * @Purpose: Apply fabric token generated by et-server
+               *
+               * @Param: no parameters needed it takes the fabricAppId and the appSecrete from the constructor of class ApplyFabricToken
+               * @Return: authToken
+               */
+              public function applyFabricToken()
+              {
+                $ch = curl_init();
+          
+                $headers = array(
+                  "Content-Type: application/json",
+                  "X-APP-Key: " . $this->fabricAppId
+                );
+          
+                curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . "/payment/v1/token");
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+          
+                $payload =  array(
+                  "appSecret" => $this->appSecret
+                );
+          
+                //print_r(json_encode($payload));exit;
+                $data = json_encode($payload);
+          
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+          
+          
+                // Timeout in seconds
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+          
+                $authToken = curl_exec($ch);
+          
+                return $authToken;
+              }
+            }
+          `,
+          },
+        ],
+      },
+      {
+        id: 2,
+        name: "CreateOrder",
+        description: `CreateOrder is the second process on payment integration, it create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const applyFabricToken = require("./applyFabricTokenService");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+var request = require("request");
+
+exports.createOrder = async (req, res) => {
+  let title = req.body.title;
+  let amount = req.body.amount;
+  let applyFabricTokenResult = await applyFabricToken();
+  let fabricToken = applyFabricTokenResult.token;
+  let createOrderResult = await exports.requestCreateOrder(
+    fabricToken,
+    title,
+    amount
+  );
+  let prepayId = createOrderResult.biz_content.prepay_id;
+  let rawRequest = createRawRequest(prepayId);
+  // console.log("Assembled URL");
+  res.send(config.webBaseUrl + rawRequest + "&version=1.0&trade_type=Checkout");
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount) => {
+  return new Promise((resolve) => {
+    let reqObject = createRequestObject(title, amount);
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/merchant/preOrder",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+        Authorization: fabricToken,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify(reqObject),
+    };
+
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+};
+
+function createRequestObject(title, amount) {
+  let req = {
+    timestamp: tools.createTimeStamp(),
+    nonce_str: tools.createNonceStr(),
+    method: "payment.preorder",
+    version: "1.0",
+  };
+  let biz = {
+    notify_url: "https://www.google.com",
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    merch_order_id: createMerchantOrderId(),
+    trade_type: "Checkout",
+    title: title,
+    total_amount: amount,
+    trans_currency: "ETB",
+    timeout_express: "120m",
+    business_type: "BuyGoods",
+    redirect_url: "https://www.bing.com/",
+    callback_info: "From web",
+  };
+  req.biz_content = biz;
+  req.sign = tools.signRequestObject(req);
+  req.sign_type = "SHA256WithRSA";
+  console.log(req);
+  return req;
+}
+
+function createMerchantOrderId() {
+  return new Date().getTime() + "";
+}
+
+function createRawRequest(prepayId) {
+  let map = {
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    nonce_str: tools.createNonceStr(),
+    prepay_id: prepayId,
+    timestamp: tools.createTimeStamp(),
+  };
+  let sign = tools.signRequestObject(map);
+  // order by ascii in array
+  let rawRequest = [
+    "appid=" + map.appid,
+    "merch_code=" + map.merch_code,
+    "nonce_str=" + map.nonce_str,
+    "prepay_id=" + map.prepay_id,
+    "timestamp=" + map.timestamp,
+    "sign=" + sign,
+    "sign_type=SHA256WithRSA",
+  ].join("&");
+  return rawRequest;
+}`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Demo_Project.Config;
+            using Demo_Project.Models;
+            using Demo_Project.Service;
+            using Microsoft.AspNetCore.DataProtection.KeyManagement;
+            using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Http.HttpResults;
+            using Microsoft.AspNetCore.Mvc;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            using System.Net.Http.Headers;
+            using System.Text;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class CreateOrderService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<string> PostAsync([FromBody] Request request)
+                    {
+                        Console.WriteLine(request);
+                        
+                        string title = request.Title;
+                        string amount = request.Amount;
+                        Console.WriteLine("Title "+title + " Amount "+amount);      
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        ApplyFabricTokenService applyFabricTokenService = new ApplyFabricTokenService();
+                        string applyFabricToken = await applyFabricTokenService.PostAsync();
+                        dynamic data = JObject.Parse(applyFabricToken);
+                        string token = data.token;
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        var values = createRequestObject(title, amount);
+                        Console.WriteLine(values);
+                        var jsonValues = JsonConvert.SerializeObject(values);
+                        var content = new StringContent(jsonValues, Encoding.UTF8, "application/json");
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/merchant/preOrder", content);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        dynamic responseData = JObject.Parse(responseString);
+                        string prePayId = responseData.biz_content.prepay_id;
+                        return createRawRequest(prePayId);
+            
+                    }
+                    public static Dictionary<String, object> createRequestObject(string title, string amount)
+                    {
+                        var biz = new Dictionary<string, string>{
+                                { "trans_currency","ETB"},
+                                { "total_amount",amount},
+                                { "merch_order_id",Service.Tools.createTimeStamp()},
+                                { "appid",Config.Config.merchantAppId},
+                                { "merch_code",Config.Config.merchantCode},
+                                { "timeout_express","120m"},
+                                { "trade_type","Checkout"},
+                                { "notify_url","https://www.google.com"},
+                                { "title",title},
+                                { "business_type","BuyGoods"},
+                                { "payee_identifier_type","04"},
+                                { "payee_identifier",Config.Config.merchantCode},
+                                { "payee_type","5000"}
+                            };
+                        var req = new Dictionary<string, object>
+                        {
+                            {"nonce_str",Service.Tools.createNonceStr()},
+                            {"biz_content" , biz },
+                            {"method","payment.preorder"},
+                            {"version", "1.0"},
+                            {"timestamp",Service.Tools.createTimeStamp() }
+                    }; 
+                        req.Add("sign", Service.Tools.sign(req));
+                        req.Add("sign_type", "SHA256WithRSA");
+                        return req;
+                    }
+            
+                    public static string createRawRequest(string prepayId)
+                    {
+                        var maps = new Dictionary<string, string>
+                        {
+                            {"appid",Config.Config.merchantAppId },
+                            {"merch_code",Config.Config.merchantCode },
+                            {"nonce_str",Tools.createNonceStr() },
+                            {"prepay_id",prepayId },
+                            {"timestamp",Tools.createTimeStamp() },
+                            {"sign_type","SHA256withRSA" }
+            
+                        };
+                        string[] raw = { };
+                        Dictionary<string, string>.KeyCollection keys = maps.Keys;
+                        foreach (string key in keys)
+                        {
+                            raw = raw.Append(key + "=" + maps[key]).ToArray();
+            
+                        }
+                        Array.Sort(raw);
+                        string sorted = string.Join("&", raw);
+            
+                        return sorted;
+                    }
+            }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('applyFabricTokenService.php');
+            require_once('./utils/tool.php');
+            require_once('./config/env.php');
+            
+            class CreateOrderService
+            {
+                public $req;
+                public $BASE_URL;
+                public $fabricAppId;
+                public $appSecret;
+                public $merchantAppId;
+                public $merchantCode;
+                public $notify_path;
+            
+                function __construct($baseUrl, $req, $fabricAppId, $appSecret, $merchantAppId, $merchantCode)
+                {
+                    $this->BASE_URL = $baseUrl;
+                    $this->req = $req;
+                    $this->fabricAppId = $fabricAppId;
+                    $this->appSecret = $appSecret;
+                    $this->merchantAppId = $merchantAppId;
+                    $this->merchantCode = $merchantCode;
+                    $this->notify_path = "http://"  . $_SERVER['SERVER_NAME'];
+                }
+                /**
+                 * @Purpose: Creating Order
+                 *
+                 * @Param: no parameters it takes from the constructor
+                 * @Return: rawRequest|String
+                 */
+                function createOrder()
+                {
+                    $title = $this->req->title;
+                    $amount = $this->req->amount;
+            
+                    $applyFabricTokenResult = new ApplyFabricToken(
+                        $this->BASE_URL,
+                        $this->fabricAppId,
+                        $this->appSecret,
+                        $this->merchantAppId
+                    );
+            
+                    $result = json_decode($applyFabricTokenResult->applyFabricToken());
+            
+                    $fabricToken = $result->token;
+            
+                    $createOrderResult = $this->requestCreateOrder($fabricToken, $title, $amount);
+            
+                    $prepayId = json_decode($createOrderResult)->biz_content->prepay_id;
+            
+                    $rawRequest = $this->createRawRequest($prepayId);
+            
+                    echo trim((string)$rawRequest);
+                }
+            
+                /**
+                 * @Purpose: Requests CreateOrder
+                 *
+                 * @Param: fabricToken|String title|string amount|string
+                 * @Return: String | Boolean
+                 */
+            
+                function requestCreateOrder($fabricToken, $title, $amount)
+                {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . '/payment/v1/merchant/preOrder');
+                    curl_setopt($ch, CURLOPT_POST, 1);
+            
+                    // Header parameters
+                    $headers = array(
+                        "Content-Type: application/json",
+                        "X-APP-Key: " . $this->fabricAppId,
+                        "Authorization: " . $fabricToken
+                    );
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            
+                    // Body parameters
+                    $payload = $this->createRequestObject($title, $amount);
+            
+                    $data = $payload;
+            
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+            
+                    $server_output = curl_exec($ch);
+            
+                    curl_close($ch);
+            
+                    return $server_output;
+                }
+                /**
+                 * @Purpose: Creating a new merchantOrderId
+                 *
+                 * @Param: no parameters
+                 * @Return: returns a string format of time (UTC)
+                 */
+                function createMerchantOrderId_()
+                {
+                    return (string)time();
+                }
+                /**
+                 * @Purpose: Creating Request Object
+                 *
+                 * @Param: title|String and amount|String
+                 * @Return: Json encoded string
+                 */
+                function createRequestObject($title, $amount)
+                {
+                    $req = array(
+                        'nonce_str' => createNonceStr(),
+                        'method' => 'payment.preorder',
+                        'timestamp' => createTimeStamp(),
+                        'version' => '1.0',
+                        'biz_content' => [],
+                    );
+            
+                    $biz = array(
+                        // 'notify_url' => 'https://www.google.com',
+                        'notify_url' => $this->notify_path . '/api/payment.php', // set your notify end point
+                        'business_type' => 'BuyGoods',
+                        'trade_type' => "Checkout",
+                        'appid' => $this->merchantAppId,
+                        'merch_code' => $this->merchantCode,
+                        'merch_order_id' => $this->createMerchantOrderId_(),
+                        'title' => $title,
+                        'total_amount' => $amount,
+                        'trans_currency' => 'ETB',
+                        'timeout_express' => '120m',
+                        'payee_identifier' => '220311',
+                        'payee_identifier_type' => '04',
+                        'payee_type' => '5000',
+                        // 'redirect_url' => $this->path . '/app/product_list.html'
+                    );
+            
+                    $req['biz_content'] = $biz;
+                    $req['sign_type'] = 'SHA256WithRSA';
+            
+                    $req['sign'] = sign($req);
+            
+                    return json_encode($req);
+                }
+                /**
+                 * @Purpose: Create a rawRequest string for H5 page to start pay
+                 *
+                 * @Param: prepayId returned from the createRequestObject
+                 * @Return: rawRequest|string
+                 */
+                function createRawRequest($prepayId)
+                {
+                    $maps = array(
+                        "appid" => $this->merchantAppId,
+                        "merch_code" => $this->merchantCode,
+                        "nonce_str" => createNonceStr(),
+                        "prepay_id" => $prepayId,
+                        "timestamp" => createTimeStamp(),
+                        "sign_type" => "SHA256WithRSA"
+                    );
+                    
+                    foreach ($maps as $map => $m) {
+                            $rawRequest .= $map . '=' . $m."&";
+                    }
+                    $sign = sign($maps);
+                    // order by ascii in array
+                    $rawRequest = $rawRequest.'sign='. $sign;
+            
+                    return $rawRequest;
+                }
+            }
+            `,
+          },
+        ],
+      },
+      {
+        id: 3,
+        name: "Checkout",
+        description: `Checkout is the third process on payment integration, after create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"Checkout",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const applyFabricToken = require("./applyFabricTokenService");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+var request = require("request");
+
+exports.createOrder = async (req, res) => {
+  let title = req.body.title;
+  let amount = req.body.amount;
+  let applyFabricTokenResult = await applyFabricToken();
+  let fabricToken = applyFabricTokenResult.token;
+  let createOrderResult = await exports.requestCreateOrder(
+    fabricToken,
+    title,
+    amount
+  );
+  let prepayId = createOrderResult.biz_content.prepay_id;
+  let rawRequest = createRawRequest(prepayId);
+  // console.log("Assembled URL");
+  res.send(config.webBaseUrl + rawRequest + "&version=1.0&trade_type=Checkout");
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount) => {
+  return new Promise((resolve) => {
+    let reqObject = createRequestObject(title, amount);
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/merchant/preOrder",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+        Authorization: fabricToken,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify(reqObject),
+    };
+
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+};
+
+function createRequestObject(title, amount) {
+  let req = {
+    timestamp: tools.createTimeStamp(),
+    nonce_str: tools.createNonceStr(),
+    method: "payment.preorder",
+    version: "1.0",
+  };
+  let biz = {
+    notify_url: "https://www.google.com",
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    merch_order_id: createMerchantOrderId(),
+    trade_type: "Checkout",
+    title: title,
+    total_amount: amount,
+    trans_currency: "ETB",
+    timeout_express: "120m",
+    business_type: "BuyGoods",
+    redirect_url: "https://www.bing.com/",
+    callback_info: "From web",
+  };
+  req.biz_content = biz;
+  req.sign = tools.signRequestObject(req);
+  req.sign_type = "SHA256WithRSA";
+  console.log(req);
+  return req;
+}
+
+function createMerchantOrderId() {
+  return new Date().getTime() + "";
+}
+
+function createRawRequest(prepayId) {
+  let map = {
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    nonce_str: tools.createNonceStr(),
+    prepay_id: prepayId,
+    timestamp: tools.createTimeStamp(),
+  };
+  let sign = tools.signRequestObject(map);
+  // order by ascii in array
+  let rawRequest = [
+    "appid=" + map.appid,
+    "merch_code=" + map.merch_code,
+    "nonce_str=" + map.nonce_str,
+    "prepay_id=" + map.prepay_id,
+    "timestamp=" + map.timestamp,
+    "sign=" + sign,
+    "sign_type=SHA256WithRSA",
+  ].join("&");
+  return rawRequest;
+}`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `C2B -> Checkout -> C#`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('./service/createOrderService.php');
+            require_once('./service/applyFabricTokenService.php');
+            require_once('./config/env.php');
+            
+            header('content-type:application/json');
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Methods: *");
+            header("Access-Control-Allow-Methods: PUT, GET,DELETE, POST");
+            header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+            
+            $METHOD = $_SERVER['REQUEST_METHOD'];
+            $PATH = $_SERVER['REQUEST_URI'];
+            $REQUEST_PARAMS = json_decode(file_get_contents('php://input'));
+            
+            $createOrderService = new CreateOrderService(
+              $baseUrl = $ENV_Variables['baseUrl'],
+              $req = $REQUEST_PARAMS,
+              $fabricAppId = $ENV_Variables['fabricAppId'],
+              $appSecret = $ENV_Variables['appSecret'],
+              $merchantAppId = $ENV_Variables['merchantAppId'],
+              $merchantCode = $ENV_Variables['merchantCode']
+            );
+            
+            switch ($METHOD) {
+              case 'POST':
+                if ($PATH == "/create/order") {
+                  $createOrderService->createOrder();
+                } else if ($PATH == "/auth/token") {
+                  applyFabricToken($REQUEST_PARAMS);
+                }
+                break;
+            
+              default:
+                echo "WELCOME TO PAYMENT PAGE!";
+                exit;
+            }
+            `,
+          },
+        ],
+      },
+
+      {
+        id: 4,
+        name: "QueryOrder",
+        description: `QueryOrder is the forth process on payment integration, after create a transaction if you are not redeived notification, you can request callback with this interface`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `C2B -> QueryOrder -> Python`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `C2B -> QueryOrder -> JS`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `C2B -> QueryOrder -> C#`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `C2B -> QueryOrder -> PHP`,
+          },
+        ],
+      },
+    ],
+  },
+  // C2B CHECKOUT END
+
+  // B2B CHECKOUT START
+  {
+    id: 4,
+    name: "Business to Business WebCheckout",
+    value: [
+      {
+        id: 1,
+        name: "ApplyFabricToken",
+        description: `ApplyFabricToken is the initial step in the payment integration process where a token is obtained and added to a request for creating an order.`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+import json
+import urllib3
+
+urllib3.disable_warnings()
+class ApplyFabricTokenService:
+    BASE_URL = None;
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    def __init__(self,BASE_URL,fabricAppId,appSecret,merchantAppId) :
+        self.BASE_URL = BASE_URL
+        self.fabricAppId = fabricAppId
+        self.appSecret = appSecret
+        self.merchantAppId = merchantAppId
+    
+    def applyFabricToken(self):
+        headers = {
+        "Content-Type": "application/json",
+        "X-APP-Key": self.fabricAppId
+        }
+        payload = {
+              "appSecret": self.appSecret
+        }
+        data=json.dumps(payload)
+        authToken = requests.post(url=self.BASE_URL+"/payment/v1/token",headers=headers,data=data,verify=False)
+        return authToken.json()`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const config = require("../config/config");
+var request = require("request");
+
+function applyFabricToken() {
+  return new Promise((resolve, reject) => {
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/token",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify({
+        appSecret: config.appSecret,
+      }),
+    };
+    request(options, function (error, response) {
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+}
+
+module.exports = applyFabricToken;
+`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Mvc;
+            using System.Net.Http.Headers;
+            using Demo_Project.Config;
+            using System.Text.Json.Serialization;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class ApplyFabricTokenService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<String> PostAsync()
+                    {
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+            
+                        var values = new Dictionary<string, string>
+                         {
+                              { "appSecret", Config.Config.appSecrete }
+                         };
+                        var content = new FormUrlEncodedContent(values);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+            
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/token/", content);
+            
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        return responseString;
+                    }
+                }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: ` <?php
+            class ApplyFabricToken
+            {
+          
+              public $BASE_URL;
+              public $fabricAppId;
+              public $appSecret;
+              public $merchantAppId;
+          
+              function __construct($BASE_URL, $fabricAppId, $appSecret, $merchantAppId)
+              {
+                $this->BASE_URL = $BASE_URL;
+                $this->fabricAppId = $fabricAppId;
+                $this->appSecret = $appSecret;
+                $this->merchantAppId = $merchantAppId;
+              }
+              /**
+               * @Purpose: Apply fabric token generated by et-server
+               *
+               * @Param: no parameters needed it takes the fabricAppId and the appSecrete from the constructor of class ApplyFabricToken
+               * @Return: authToken
+               */
+              public function applyFabricToken()
+              {
+                $ch = curl_init();
+          
+                $headers = array(
+                  "Content-Type: application/json",
+                  "X-APP-Key: " . $this->fabricAppId
+                );
+          
+                curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . "/payment/v1/token");
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+          
+                $payload =  array(
+                  "appSecret" => $this->appSecret
+                );
+          
+                //print_r(json_encode($payload));exit;
+                $data = json_encode($payload);
+          
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+          
+          
+                // Timeout in seconds
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+          
+                $authToken = curl_exec($ch);
+          
+                return $authToken;
+              }
+            }
+          `,
+          },
+        ],
+      },
+      {
+        id: 2,
+        name: "CreateOrder",
+        description: `CreateOrder is the second process on payment integration, it create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        print(rawRequest)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `var request = require("request");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+const applyFabricToken = require("./applyFabricTokenService");
+
+exports.createOrder = async (req, res) => {
+  let title = req.body.title;
+  let amount = req.body.amount;
+  let applyFabricTokenResult = await applyFabricToken();
+  let fabricToken = applyFabricTokenResult.token;
+  let createOrderResult = await exports.requestCreateOrder(
+    fabricToken,
+    title,
+    amount
+  );
+  let prepayId = createOrderResult.biz_content.prepay_id;
+  let rawRequest = createRawRequest(prepayId);
+
+  console.log(
+    config.webBaseUrl +
+      rawRequest +
+      "&version=1.0&trade_type=WebCheckout&use_notice_key=false&language=en"
+  );
+  res.send(
+    config.webBaseUrl +
+      rawRequest +
+      "&version=1.0&trade_type=WebCheckout&use_notice_key=false&language=en"
+  );
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount) => {
+  return new Promise((resolve) => {
+    let reqObject = createRequestObject(title, amount);
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/merchant/preOrder",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+        Authorization: fabricToken,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify(reqObject),
+    };
+
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+};
+//checked
+function createRequestObject(title, amount) {
+  let req = {
+    timestamp: tools.createTimeStamp(),
+    nonce_str: tools.createNonceStr(),
+    method: "payment.preorder",
+    version: "1.0",
+  };
+  //checked
+  let biz = {
+    notify_url: "https://www.google.com",
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    merch_order_id: createMerchantOrderId(),
+    trade_type: "WebCheckout",
+    title: title,
+    total_amount: amount,
+    trans_currency: "ETB",
+    timeout_express: "120m",
+    business_type: "TransferToOtherOrg",
+    redirect_url: "https://www.baidu.com",
+  };
+  req.biz_content = biz;
+  req.sign = tools.signRequestObject(req);
+  req.sign_type = "SHA256WithRSA";
+  console.log(req);
+  return req;
+}
+
+function createMerchantOrderId() {
+  return new Date().getTime() + "";
+}
+
+function createRawRequest(prepayId) {
+  let map = {
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    nonce_str: tools.createNonceStr(),
+    prepay_id: prepayId,
+    timestamp: tools.createTimeStamp(),
+  };
+  let sign = tools.signRequestObject(map);
+  // order by ascii in array
+  let rawRequest = [
+    "appid=" + map.appid,
+    "merch_code=" + map.merch_code,
+    "nonce_str=" + map.nonce_str,
+    "prepay_id=" + map.prepay_id,
+    "timestamp=" + map.timestamp,
+    "sign=" + sign,
+    "sign_type=SHA256WithRSA",
+  ].join("&");
+  return rawRequest;
+}`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Demo_Project.Config;
+            using Demo_Project.Models;
+            using Demo_Project.Service;
+            using Microsoft.AspNetCore.DataProtection.KeyManagement;
+            using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Http.HttpResults;
+            using Microsoft.AspNetCore.Mvc;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            using System.Net.Http.Headers;
+            using System.Text;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class CreateOrderService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<string> PostAsync([FromBody] Request request)
+                    {
+                        Console.WriteLine(request);
+                        
+                        string title = request.Title;
+                        string amount = request.Amount;
+                        Console.WriteLine("Title "+title + " Amount "+amount);      
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        ApplyFabricTokenService applyFabricTokenService = new ApplyFabricTokenService();
+                        string applyFabricToken = await applyFabricTokenService.PostAsync();
+                        dynamic data = JObject.Parse(applyFabricToken);
+                        string token = data.token;
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        var values = createRequestObject(title, amount);
+                        Console.WriteLine(values);
+                        var jsonValues = JsonConvert.SerializeObject(values);
+                        var content = new StringContent(jsonValues, Encoding.UTF8, "application/json");
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/merchant/preOrder", content);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        dynamic responseData = JObject.Parse(responseString);
+                        string prePayId = responseData.biz_content.prepay_id;
+                        return createRawRequest(prePayId);
+            
+                    }
+                    public static Dictionary<String, object> createRequestObject(string title, string amount)
+                    {
+                        var biz = new Dictionary<string, string>{
+                                { "trans_currency","ETB"},
+                                { "total_amount",amount},
+                                { "merch_order_id",Service.Tools.createTimeStamp()},
+                                { "appid",Config.Config.merchantAppId},
+                                { "merch_code",Config.Config.merchantCode},
+                                { "timeout_express","120m"},
+                                { "trade_type","WebCheckout"},
+                                { "notify_url","https://www.google.com"},
+                                { "title",title},
+                                { "business_type","TransferToOtherOrg"},
+                                { "payee_identifier_type","04"},
+                                { "payee_identifier",Config.Config.merchantCode},
+                                { "payee_type","5000"}
+                            };
+                        var req = new Dictionary<string, object>
+                        {
+                            {"nonce_str",Service.Tools.createNonceStr()},
+                            {"biz_content" , biz },
+                            {"method","payment.preorder"},
+                            {"version", "1.0"},
+                            {"timestamp",Service.Tools.createTimeStamp() }
+                    }; 
+                        req.Add("sign", Service.Tools.sign(req));
+                        req.Add("sign_type", "SHA256WithRSA");
+                        return req;
+                    }
+            
+                    public static string createRawRequest(string prepayId)
+                    {
+                        var maps = new Dictionary<string, string>
+                        {
+                            {"appid",Config.Config.merchantAppId },
+                            {"merch_code",Config.Config.merchantCode },
+                            {"nonce_str",Tools.createNonceStr() },
+                            {"prepay_id",prepayId },
+                            {"timestamp",Tools.createTimeStamp() },
+                            {"sign_type","SHA256withRSA" }
+            
+                        };
+                        string[] raw = { };
+                        Dictionary<string, string>.KeyCollection keys = maps.Keys;
+                        foreach (string key in keys)
+                        {
+                            raw = raw.Append(key + "=" + maps[key]).ToArray();
+            
+                        }
+                        Array.Sort(raw);
+                        string sorted = string.Join("&", raw);
+            
+                        return sorted;
+                    }
+            }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('applyFabricTokenService.php');
+            require_once('./utils/tool.php');
+            require_once('./config/env.php');
+            
+            class CreateOrderService
+            {
+                public $req;
+                public $BASE_URL;
+                public $fabricAppId;
+                public $appSecret;
+                public $merchantAppId;
+                public $merchantCode;
+                public $notify_path;
+            
+                function __construct($baseUrl, $req, $fabricAppId, $appSecret, $merchantAppId, $merchantCode)
+                {
+                    $this->BASE_URL = $baseUrl;
+                    $this->req = $req;
+                    $this->fabricAppId = $fabricAppId;
+                    $this->appSecret = $appSecret;
+                    $this->merchantAppId = $merchantAppId;
+                    $this->merchantCode = $merchantCode;
+                    $this->notify_path = "http://"  . $_SERVER['SERVER_NAME'];
+                }
+                /**
+                 * @Purpose: Creating Order
+                 *
+                 * @Param: no parameters it takes from the constructor
+                 * @Return: rawRequest|String
+                 */
+                function createOrder()
+                {
+                    $title = $this->req->title;
+                    $amount = $this->req->amount;
+            
+                    $applyFabricTokenResult = new ApplyFabricToken(
+                        $this->BASE_URL,
+                        $this->fabricAppId,
+                        $this->appSecret,
+                        $this->merchantAppId
+                    );
+            
+                    $result = json_decode($applyFabricTokenResult->applyFabricToken());
+            
+                    $fabricToken = $result->token;
+            
+                    $createOrderResult = $this->requestCreateOrder($fabricToken, $title, $amount);
+            
+                    $prepayId = json_decode($createOrderResult)->biz_content->prepay_id;
+            
+                    $rawRequest = $this->createRawRequest($prepayId);
+            
+                    echo trim((string)$rawRequest);
+                }
+            
+                /**
+                 * @Purpose: Requests CreateOrder
+                 *
+                 * @Param: fabricToken|String title|string amount|string
+                 * @Return: String | Boolean
+                 */
+            
+                function requestCreateOrder($fabricToken, $title, $amount)
+                {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . '/payment/v1/merchant/preOrder');
+                    curl_setopt($ch, CURLOPT_POST, 1);
+            
+                    // Header parameters
+                    $headers = array(
+                        "Content-Type: application/json",
+                        "X-APP-Key: " . $this->fabricAppId,
+                        "Authorization: " . $fabricToken
+                    );
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            
+                    // Body parameters
+                    $payload = $this->createRequestObject($title, $amount);
+            
+                    $data = $payload;
+            
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+            
+                    $server_output = curl_exec($ch);
+            
+                    curl_close($ch);
+            
+                    return $server_output;
+                }
+                /**
+                 * @Purpose: Creating a new merchantOrderId
+                 *
+                 * @Param: no parameters
+                 * @Return: returns a string format of time (UTC)
+                 */
+                function createMerchantOrderId_()
+                {
+                    return (string)time();
+                }
+                /**
+                 * @Purpose: Creating Request Object
+                 *
+                 * @Param: title|String and amount|String
+                 * @Return: Json encoded string
+                 */
+                function createRequestObject($title, $amount)
+                {
+                    $req = array(
+                        'nonce_str' => createNonceStr(),
+                        'method' => 'payment.preorder',
+                        'timestamp' => createTimeStamp(),
+                        'version' => '1.0',
+                        'biz_content' => [],
+                    );
+            
+                    $biz = array(
+                        // 'notify_url' => 'https://www.google.com',
+                        'notify_url' => $this->notify_path . '/api/payment.php', // set your notify end point
+                        'business_type' => 'TransferToOtherOrg',
+                        'trade_type' => 'WebCheckout',
+                        'appid' => $this->merchantAppId,
+                        'merch_code' => $this->merchantCode,
+                        'merch_order_id' => $this->createMerchantOrderId_(),
+                        'title' => $title,
+                        'total_amount' => $amount,
+                        'trans_currency' => 'ETB',
+                        'timeout_express' => '120m',
+                        'payee_identifier' => '220311',
+                        'payee_identifier_type' => '04',
+                        'payee_type' => '5000',
+                        // 'redirect_url' => $this->path . '/app/product_list.html'
+                    );
+            
+                    $req['biz_content'] = $biz;
+                    $req['sign_type'] = 'SHA256WithRSA';
+            
+                    $req['sign'] = sign($req);
+            
+                    return json_encode($req);
+                }
+                /**
+                 * @Purpose: Create a rawRequest string for H5 page to start pay
+                 *
+                 * @Param: prepayId returned from the createRequestObject
+                 * @Return: rawRequest|string
+                 */
+                function createRawRequest($prepayId)
+                {
+                    $maps = array(
+                        "appid" => $this->merchantAppId,
+                        "merch_code" => $this->merchantCode,
+                        "nonce_str" => createNonceStr(),
+                        "prepay_id" => $prepayId,
+                        "timestamp" => createTimeStamp(),
+                        "sign_type" => "SHA256WithRSA"
+                    );
+                    
+                    foreach ($maps as $map => $m) {
+                            $rawRequest .= $map . '=' . $m."&";
+                    }
+                    $sign = sign($maps);
+                    // order by ascii in array
+                    $rawRequest = $rawRequest.'sign='. $sign;
+            
+                    return $rawRequest;
+                }
+            }
+            `,
+          },
+        ],
+      },
+      {
+        id: 3,
+        name: "Checkout",
+        description: `Checkout is the third process on payment integration, after create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `B2B -> Checkout -> Python`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `var request = require("request");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+const applyFabricToken = require("./applyFabricTokenService");
+
+exports.createOrder = async (req, res) => {
+  let title = req.body.title;
+  let amount = req.body.amount;
+  let applyFabricTokenResult = await applyFabricToken();
+  let fabricToken = applyFabricTokenResult.token;
+  let createOrderResult = await exports.requestCreateOrder(
+    fabricToken,
+    title,
+    amount
+  );
+  let prepayId = createOrderResult.biz_content.prepay_id;
+  let rawRequest = createRawRequest(prepayId);
+
+  console.log(
+    config.webBaseUrl +
+      rawRequest +
+      "&version=1.0&trade_type=WebCheckout&use_notice_key=false&language=en"
+  );
+  res.send(
+    config.webBaseUrl +
+      rawRequest +
+      "&version=1.0&trade_type=WebCheckout&use_notice_key=false&language=en"
+  );
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount) => {
+  return new Promise((resolve) => {
+    let reqObject = createRequestObject(title, amount);
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/merchant/preOrder",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+        Authorization: fabricToken,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify(reqObject),
+    };
+
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+};
+//checked
+function createRequestObject(title, amount) {
+  let req = {
+    timestamp: tools.createTimeStamp(),
+    nonce_str: tools.createNonceStr(),
+    method: "payment.preorder",
+    version: "1.0",
+  };
+  //checked
+  let biz = {
+    notify_url: "https://www.google.com",
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    merch_order_id: createMerchantOrderId(),
+    trade_type: "WebCheckout",
+    title: title,
+    total_amount: amount,
+    trans_currency: "ETB",
+    timeout_express: "120m",
+    business_type: "TransferToOtherOrg",
+    redirect_url: "https://www.baidu.com",
+  };
+  req.biz_content = biz;
+  req.sign = tools.signRequestObject(req);
+  req.sign_type = "SHA256WithRSA";
+  console.log(req);
+  return req;
+}
+
+function createMerchantOrderId() {
+  return new Date().getTime() + "";
+}
+
+function createRawRequest(prepayId) {
+  let map = {
+    appid: config.merchantAppId,
+    merch_code: config.merchantCode,
+    nonce_str: tools.createNonceStr(),
+    prepay_id: prepayId,
+    timestamp: tools.createTimeStamp(),
+  };
+  let sign = tools.signRequestObject(map);
+  // order by ascii in array
+  let rawRequest = [
+    "appid=" + map.appid,
+    "merch_code=" + map.merch_code,
+    "nonce_str=" + map.nonce_str,
+    "prepay_id=" + map.prepay_id,
+    "timestamp=" + map.timestamp,
+    "sign=" + sign,
+    "sign_type=SHA256WithRSA",
+  ].join("&");
+  return rawRequest;
+}`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `B2B -> Checkout -> C#`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('./service/createOrderService.php');
+            require_once('./service/applyFabricTokenService.php');
+            require_once('./config/env.php');
+            
+            header('content-type:application/json');
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Methods: *");
+            header("Access-Control-Allow-Methods: PUT, GET,DELETE, POST");
+            header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+            
+            $METHOD = $_SERVER['REQUEST_METHOD'];
+            $PATH = $_SERVER['REQUEST_URI'];
+            $REQUEST_PARAMS = json_decode(file_get_contents('php://input'));
+            
+            $createOrderService = new CreateOrderService(
+              $baseUrl = $ENV_Variables['baseUrl'],
+              $req = $REQUEST_PARAMS,
+              $fabricAppId = $ENV_Variables['fabricAppId'],
+              $appSecret = $ENV_Variables['appSecret'],
+              $merchantAppId = $ENV_Variables['merchantAppId'],
+              $merchantCode = $ENV_Variables['merchantCode']
+            );
+            
+            switch ($METHOD) {
+              case 'POST':
+                if ($PATH == "/create/order") {
+                  $createOrderService->createOrder();
+                } else if ($PATH == "/auth/token") {
+                  applyFabricToken($REQUEST_PARAMS);
+                }
+                break;
+            
+              default:
+                echo "WELCOME TO PAYMENT PAGE!";
+                exit;
+            }
+            `,
+          },
+        ],
+      },
+
+      {
+        id: 4,
+        name: "QueryOrder",
+        description: `QueryOrder is the forth process on payment integration, after create a transaction if you are not redeived notification, you can request callback with this interface`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `B2B -> QueryOrder -> Python`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `B2B -> QueryOrder -> JS`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `B2B -> QueryOrder -> C#`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `B2B -> QueryOrder -> PHP`,
+          },
+        ],
+      },
+    ],
+  },
+  // B2B CHECKOUT END
+
+  // MANDET CHECKOUT START
+  {
+    id: 5,
+    name: "Subscription Payment Integration",
+    value: [
+      {
+        id: 1,
+        name: "ApplyFabricToken",
+        description: `ApplyFabricToken is the initial step in the payment integration process where a token is obtained and added to a request for creating an order.`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+import json
+import urllib3
+
+urllib3.disable_warnings()
+class ApplyFabricTokenService:
+    BASE_URL = None;
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    def __init__(self,BASE_URL,fabricAppId,appSecret,merchantAppId) :
+        self.BASE_URL = BASE_URL
+        self.fabricAppId = fabricAppId
+        self.appSecret = appSecret
+        self.merchantAppId = merchantAppId
+    
+    def applyFabricToken(self):
+        headers = {
+        "Content-Type": "application/json",
+        "X-APP-Key": self.fabricAppId
+        }
+        payload = {
+              "appSecret": self.appSecret
+        }
+        data=json.dumps(payload)
+        authToken = requests.post(url=self.BASE_URL+"/payment/v1/token",headers=headers,data=data,verify=False)
+        return authToken.json()`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const config = require("../config/config");
+var request = require("request");
+
+// Apply fabric token
+function applyFabricToken() {
+  return new Promise((resolve, reject) => {
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/token",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify({
+        appSecret: config.appSecret,
+      }),
+    };
+    console.log(options);
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+}
+
+module.exports = applyFabricToken;
+`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `Schedule -> ApplyFabricToken -> C#`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `Schedule -> ApplyFabricToken -> PHP`,
+          },
+        ],
+      },
+      {
+        id: 2,
+        name: "CreateOrder",
+        description: `CreateOrder is the second process on payment integration, it create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        print(rawRequest)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const applyFabricToken = require("./applyFabricTokenService");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+var request = require("request");
+
+exports.createMandetOrder = async (req, res) => {
+    let title = req.body.title;
+    let amount = req.body.amount;
+    let mandateTemplateId = req.body.mandateTemplateId
+    let applyFabricTokenResult = await applyFabricToken();
+    let fabricToken = applyFabricTokenResult.token;
+    const mctContractNo = generateUniqueId()
+    let createOrderResult = await exports.requestCreateOrder(
+        fabricToken,
+        title,
+        amount,
+        mandateTemplateId,
+        mctContractNo
+    );
+    let prepayId = createOrderResult.biz_content.prepay_id;
+    let rawRequest = createRawRequest(prepayId);
+    res.status(200).json({ rawRequest, mctContractNo });
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount, mandateTemplateId, mctContractNo) => {
+    return new Promise((resolve) => {
+        let reqObject = createRequestObject(title, amount, mandateTemplateId, mctContractNo);
+        var options = {
+            method: "POST",
+            url: config.baseUrl + "/payment/v1/merchant/preOrder",
+            headers: {
+                "Content-Type": "application/json",
+                "X-APP-Key": config.fabricAppId,
+                Authorization: fabricToken,
+            },
+            rejectUnauthorized: false, //add when working with https sites
+            requestCert: false, //add when working with https sites
+            agent: false, //add when working with https sites
+            body: JSON.stringify(reqObject),
+        };
+
+        request(options, function (error, response) {
+            if (error) throw new Error(error);
+            let result = JSON.parse(response.body);
+            resolve(result);
+        });
+    });
+};
+
+function createRequestObject(title, amount, mandateTemplateId, mctContractNo) {
+    let req = {
+        timestamp: tools.createTimeStamp(),
+        nonce_str: tools.createNonceStr(),
+        method: "payment.preorder",
+        version: "1.0",
+    };
+    let biz = {
+        notify_url: "https://developer.ethiotelecom.et/serviceapi/v2/notify",
+        trade_type: "InApp",
+        appid: config.merchantAppId,
+        merch_code: config.merchantCode,
+        merch_order_id: createMerchantOrderId(),
+        title: title,
+        total_amount: amount,
+        trans_currency: "ETB",
+        timeout_express: "120m",
+        payee_identifier: "220311",
+        payee_identifier_type: "04",
+        payee_type: "5000",
+        mandate_data: {
+            mctContractNo: mctContractNo,
+            mandateTemplateId: mandateTemplateId,
+            executeTime: "2023-08-04"
+        },
+        redirect_url: "https://https://developer.ethiotelecom.et/api/v1/notify",
+    };
+    req.biz_content = biz;
+    req.sign = tools.signRequestObject(req);
+    req.sign_type = "SHA256WithRSA";
+    return req;
+}
+
+function createMerchantOrderId() {
+    return new Date().getTime() + "";
+}
+
+function generateUniqueId() {
+    const random = Math.random().toString().substring(2); // Get random number as a string
+    return random;
+}
+
+function createRawRequest(prepayId) {
+    let map = {
+        appid: config.merchantAppId,
+        merch_code: config.merchantCode,
+        nonce_str: tools.createNonceStr(),
+        prepay_id: prepayId,
+        timestamp: tools.createTimeStamp(),
+    };
+    let sign = tools.signRequestObject(map);
+    // order by ascii in array
+    let rawRequest = [
+        "appid=" + map.appid,
+        "merch_code=" + map.merch_code,
+        "nonce_str=" + map.nonce_str,
+        "prepay_id=" + map.prepay_id,
+        "timestamp=" + map.timestamp,
+        "sign=" + sign,
+        "sign_type=SHA256WithRSA",
+    ].join("&");
+    return rawRequest;
+}`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `Schedule -> CreateOrder -> C#`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `Schedule -> CreateOrder -> PHP`,
+          },
+        ],
+      },
+      {
+        id: 3,
+        name: "Checkout",
+        description: `Checkout is the third process on payment integration, after create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        print(rawRequest)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const applyFabricToken = require("./applyFabricTokenService");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+var request = require("request");
+
+exports.createMandetOrder = async (req, res) => {
+    let title = req.body.title;
+    let amount = req.body.amount;
+    let mandateTemplateId = req.body.mandateTemplateId
+    let applyFabricTokenResult = await applyFabricToken();
+    let fabricToken = applyFabricTokenResult.token;
+    const mctContractNo = generateUniqueId()
+    let createOrderResult = await exports.requestCreateOrder(
+        fabricToken,
+        title,
+        amount,
+        mandateTemplateId,
+        mctContractNo
+    );
+    let prepayId = createOrderResult.biz_content.prepay_id;
+    let rawRequest = createRawRequest(prepayId);
+    res.status(200).json({ rawRequest, mctContractNo });
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount, mandateTemplateId, mctContractNo) => {
+    return new Promise((resolve) => {
+        let reqObject = createRequestObject(title, amount, mandateTemplateId, mctContractNo);
+        var options = {
+            method: "POST",
+            url: config.baseUrl + "/payment/v1/merchant/preOrder",
+            headers: {
+                "Content-Type": "application/json",
+                "X-APP-Key": config.fabricAppId,
+                Authorization: fabricToken,
+            },
+            rejectUnauthorized: false, //add when working with https sites
+            requestCert: false, //add when working with https sites
+            agent: false, //add when working with https sites
+            body: JSON.stringify(reqObject),
+        };
+
+        request(options, function (error, response) {
+            if (error) throw new Error(error);
+            let result = JSON.parse(response.body);
+            resolve(result);
+        });
+    });
+};
+
+function createRequestObject(title, amount, mandateTemplateId, mctContractNo) {
+    let req = {
+        timestamp: tools.createTimeStamp(),
+        nonce_str: tools.createNonceStr(),
+        method: "payment.preorder",
+        version: "1.0",
+    };
+    let biz = {
+        notify_url: "https://developer.ethiotelecom.et/serviceapi/v2/notify",
+        trade_type: "InApp",
+        appid: config.merchantAppId,
+        merch_code: config.merchantCode,
+        merch_order_id: createMerchantOrderId(),
+        title: title,
+        total_amount: amount,
+        trans_currency: "ETB",
+        timeout_express: "120m",
+        payee_identifier: "220311",
+        payee_identifier_type: "04",
+        payee_type: "5000",
+        mandate_data: {
+            mctContractNo: mctContractNo,
+            mandateTemplateId: mandateTemplateId,
+            executeTime: "2023-08-04"
+        },
+        redirect_url: "https://https://developer.ethiotelecom.et/api/v1/notify",
+    };
+    req.biz_content = biz;
+    req.sign = tools.signRequestObject(req);
+    req.sign_type = "SHA256WithRSA";
+    return req;
+}
+
+function createMerchantOrderId() {
+    return new Date().getTime() + "";
+}
+
+function generateUniqueId() {
+    const random = Math.random().toString().substring(2); // Get random number as a string
+    return random;
+}
+
+function createRawRequest(prepayId) {
+    let map = {
+        appid: config.merchantAppId,
+        merch_code: config.merchantCode,
+        nonce_str: tools.createNonceStr(),
+        prepay_id: prepayId,
+        timestamp: tools.createTimeStamp(),
+    };
+    let sign = tools.signRequestObject(map);
+    // order by ascii in array
+    let rawRequest = [
+        "appid=" + map.appid,
+        "merch_code=" + map.merch_code,
+        "nonce_str=" + map.nonce_str,
+        "prepay_id=" + map.prepay_id,
+        "timestamp=" + map.timestamp,
+        "sign=" + sign,
+        "sign_type=SHA256WithRSA",
+    ].join("&");
+    return rawRequest;
+}`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `Schedule -> Checkout -> C#`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `Schedule -> Checkout -> PHP`,
+          },
+        ],
+      },
+
+      {
+        id: 4,
+        name: "QueryOrder",
+        description: `QueryOrder is the forth process on payment integration, after create a transaction if you are not redeived notification, you can request callback with this interface`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `Schedule -> QueryOrder -> Python`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const applyFabricToken = require("./applyFabricTokenService");
+const tools = require("../utils/tools");
+const tools2 = require("../utils/tools-2")
+const config = require("../config/config");
+var request = require("request");
+
+exports.queryMandet = async (req, res) => {
+    let merch_contract_no = req.body.merch_contract_no;
+    let applyFabricTokenResult = await applyFabricToken();
+    let fabricToken = applyFabricTokenResult.token;
+
+    let createOrderResult = await exports.requestCreateOrder(
+        fabricToken,
+        merch_contract_no
+    );
+    res.send(createOrderResult);
+};
+
+exports.requestCreateOrder = async (fabricToken, merch_contract_no) => {
+    return new Promise((resolve) => {
+        let reqObject = createRequestObject(merch_contract_no);
+        var options = {
+            method: "POST",
+            url: config.baseUrl + "/payment/v1/mandates/query",
+            headers: {
+                "Content-Type": "application/json",
+                "X-APP-Key": config.fabricAppId,
+                Authorization: fabricToken,
+            },
+            rejectUnauthorized: false, //add when working with https sites
+            requestCert: false, //add when working with https sites
+            agent: false, //add when working with https sites
+            body: JSON.stringify(reqObject),
+        };
+
+        request(options, function (error, response) {
+            if (error) throw new Error(error);
+            let result = JSON.parse(response.body);
+            resolve(result);
+        });
+    });
+};
+
+function createRequestObject(merch_contract_no) {
+    let req = {
+        timestamp: tools.createTimeStamp(),
+        nonce_str: tools.createNonceStr(),
+        method: "payment.queryMandate",
+        version: "1.0",
+    };
+    let biz = {
+        appid: config.merchantAppId,
+        merch_short_code: config.merchantCode,
+        merch_contract_no: merch_contract_no
+    };
+    req.biz_content = biz;
+    req.sign = tools2.signRequestObject(req);
+    req.sign_type = "SHA256WithRSA";
+    return req;
+}
+`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `Schedule -> QueryOrder -> C#`,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `Schedule -> QueryOrder -> PHP`,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 6,
+    name: "Application SDK Integration",
+    value: [
+      {
+        id: 1,
+        name: "ApplyFabricToken",
+        description: `ApplyFabricToken is the initial step in the payment integration process where a token is obtained and added to a request for creating an order.`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+import json
+import urllib3
+
+urllib3.disable_warnings()
+class ApplyFabricTokenService:
+    BASE_URL = None;
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    def __init__(self,BASE_URL,fabricAppId,appSecret,merchantAppId) :
+        self.BASE_URL = BASE_URL
+        self.fabricAppId = fabricAppId
+        self.appSecret = appSecret
+        self.merchantAppId = merchantAppId
+    
+    def applyFabricToken(self):
+        headers = {
+        "Content-Type": "application/json",
+        "X-APP-Key": self.fabricAppId
+        }
+        payload = {
+              "appSecret": self.appSecret
+        }
+        data=json.dumps(payload)
+        authToken = requests.post(url=self.BASE_URL+"/payment/v1/token",headers=headers,data=data,verify=False)
+        return authToken.json()`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const config = require("../config/config");
+var request = require("request");
+
+// Apply fabric token
+function applyFabricToken() {
+  return new Promise((resolve, reject) => {
+    var options = {
+      method: "POST",
+      url: config.baseUrl + "/payment/v1/token",
+      headers: {
+        "Content-Type": "application/json",
+        "X-APP-Key": config.fabricAppId,
+      },
+      rejectUnauthorized: false, //add when working with https sites
+      requestCert: false, //add when working with https sites
+      agent: false, //add when working with https sites
+      body: JSON.stringify({
+        appSecret: config.appSecret,
+      }),
+    };
+    console.log(options);
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      let result = JSON.parse(response.body);
+      resolve(result);
+    });
+  });
+}
+
+module.exports = applyFabricToken;
+`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Mvc;
+            using System.Net.Http.Headers;
+            using Demo_Project.Config;
+            using System.Text.Json.Serialization;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class ApplyFabricTokenService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<String> PostAsync()
+                    {
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+            
+                        var values = new Dictionary<string, string>
+                         {
+                              { "appSecret", Config.Config.appSecrete }
+                         };
+                        var content = new FormUrlEncodedContent(values);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+            
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/token/", content);
+            
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        return responseString;
+                    }
+                }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: ` <?php
+            class ApplyFabricToken
+            {
+          
+              public $BASE_URL;
+              public $fabricAppId;
+              public $appSecret;
+              public $merchantAppId;
+          
+              function __construct($BASE_URL, $fabricAppId, $appSecret, $merchantAppId)
+              {
+                $this->BASE_URL = $BASE_URL;
+                $this->fabricAppId = $fabricAppId;
+                $this->appSecret = $appSecret;
+                $this->merchantAppId = $merchantAppId;
+              }
+              /**
+               * @Purpose: Apply fabric token generated by et-server
+               *
+               * @Param: no parameters needed it takes the fabricAppId and the appSecrete from the constructor of class ApplyFabricToken
+               * @Return: authToken
+               */
+              public function applyFabricToken()
+              {
+                $ch = curl_init();
+          
+                $headers = array(
+                  "Content-Type: application/json",
+                  "X-APP-Key: " . $this->fabricAppId
+                );
+          
+                curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . "/payment/v1/token");
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+          
+                $payload =  array(
+                  "appSecret" => $this->appSecret
+                );
+          
+                //print_r(json_encode($payload));exit;
+                $data = json_encode($payload);
+          
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+          
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+          
+          
+                // Timeout in seconds
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+          
+                $authToken = curl_exec($ch);
+          
+                return $authToken;
+              }
+            }
+          `,
+          },
+        ],
+      },
+      {
+        id: 2,
+        name: "CreateOrder",
+        description: `CreateOrder is the second process on payment integration, it create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        print(rawRequest)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const applyFabricToken = require("./applyFabricTokenService");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+var request = require("request");
+
+exports.createMandetOrder = async (req, res) => {
+    let title = req.body.title;
+    let amount = req.body.amount;
+    let mandateTemplateId = req.body.mandateTemplateId
+    let applyFabricTokenResult = await applyFabricToken();
+    let fabricToken = applyFabricTokenResult.token;
+    const mctContractNo = generateUniqueId()
+    let createOrderResult = await exports.requestCreateOrder(
+        fabricToken,
+        title,
+        amount,
+        mandateTemplateId,
+        mctContractNo
+    );
+    let prepayId = createOrderResult.biz_content.prepay_id;
+    let rawRequest = createRawRequest(prepayId);
+    res.status(200).json({ rawRequest, mctContractNo });
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount, mandateTemplateId, mctContractNo) => {
+    return new Promise((resolve) => {
+        let reqObject = createRequestObject(title, amount, mandateTemplateId, mctContractNo);
+        var options = {
+            method: "POST",
+            url: config.baseUrl + "/payment/v1/merchant/preOrder",
+            headers: {
+                "Content-Type": "application/json",
+                "X-APP-Key": config.fabricAppId,
+                Authorization: fabricToken,
+            },
+            rejectUnauthorized: false, //add when working with https sites
+            requestCert: false, //add when working with https sites
+            agent: false, //add when working with https sites
+            body: JSON.stringify(reqObject),
+        };
+
+        request(options, function (error, response) {
+            if (error) throw new Error(error);
+            let result = JSON.parse(response.body);
+            resolve(result);
+        });
+    });
+};
+
+function createRequestObject(title, amount, mandateTemplateId, mctContractNo) {
+    let req = {
+        timestamp: tools.createTimeStamp(),
+        nonce_str: tools.createNonceStr(),
+        method: "payment.preorder",
+        version: "1.0",
+    };
+    let biz = {
+        notify_url: "https://developer.ethiotelecom.et/serviceapi/v2/notify",
+        trade_type: "InApp",
+        appid: config.merchantAppId,
+        merch_code: config.merchantCode,
+        merch_order_id: createMerchantOrderId(),
+        title: title,
+        total_amount: amount,
+        trans_currency: "ETB",
+        timeout_express: "120m",
+        payee_identifier: "220311",
+        payee_identifier_type: "04",
+        payee_type: "5000",
+        mandate_data: {
+            mctContractNo: mctContractNo,
+            mandateTemplateId: mandateTemplateId,
+            executeTime: "2023-08-04"
+        },
+        redirect_url: "https://https://developer.ethiotelecom.et/api/v1/notify",
+    };
+    req.biz_content = biz;
+    req.sign = tools.signRequestObject(req);
+    req.sign_type = "SHA256WithRSA";
+    return req;
+}
+
+function createMerchantOrderId() {
+    return new Date().getTime() + "";
+}
+
+function generateUniqueId() {
+    const random = Math.random().toString().substring(2); // Get random number as a string
+    return random;
+}
+
+function createRawRequest(prepayId) {
+    let map = {
+        appid: config.merchantAppId,
+        merch_code: config.merchantCode,
+        nonce_str: tools.createNonceStr(),
+        prepay_id: prepayId,
+        timestamp: tools.createTimeStamp(),
+    };
+    let sign = tools.signRequestObject(map);
+    // order by ascii in array
+    let rawRequest = [
+        "appid=" + map.appid,
+        "merch_code=" + map.merch_code,
+        "nonce_str=" + map.nonce_str,
+        "prepay_id=" + map.prepay_id,
+        "timestamp=" + map.timestamp,
+        "sign=" + sign,
+        "sign_type=SHA256WithRSA",
+    ].join("&");
+    return rawRequest;
+}`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Demo_Project.Config;
+            using Demo_Project.Models;
+            using Demo_Project.Service;
+            using Microsoft.AspNetCore.DataProtection.KeyManagement;
+            using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Http.HttpResults;
+            using Microsoft.AspNetCore.Mvc;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            using System.Net.Http.Headers;
+            using System.Text;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class CreateOrderService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<string> PostAsync([FromBody] Request request)
+                    {
+                        Console.WriteLine(request);
+                        
+                        string title = request.Title;
+                        string amount = request.Amount;
+                        Console.WriteLine("Title "+title + " Amount "+amount);      
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        ApplyFabricTokenService applyFabricTokenService = new ApplyFabricTokenService();
+                        string applyFabricToken = await applyFabricTokenService.PostAsync();
+                        dynamic data = JObject.Parse(applyFabricToken);
+                        string token = data.token;
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        var values = createRequestObject(title, amount);
+                        Console.WriteLine(values);
+                        var jsonValues = JsonConvert.SerializeObject(values);
+                        var content = new StringContent(jsonValues, Encoding.UTF8, "application/json");
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/merchant/preOrder", content);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        dynamic responseData = JObject.Parse(responseString);
+                        string prePayId = responseData.biz_content.prepay_id;
+                        return createRawRequest(prePayId);
+            
+                    }
+                    public static Dictionary<String, object> createRequestObject(string title, string amount)
+                    {
+                        var biz = new Dictionary<string, string>{
+                                { "trans_currency","ETB"},
+                                { "total_amount",amount},
+                                { "merch_order_id",Service.Tools.createTimeStamp()},
+                                { "appid",Config.Config.merchantAppId},
+                                { "merch_code",Config.Config.merchantCode},
+                                { "timeout_express","120m"},
+                                { "trade_type","InApp"},
+                                { "notify_url","https://www.google.com"},
+                                { "title",title},
+                                { "business_type","BuyGoods"},
+                                { "payee_identifier_type","04"},
+                                { "payee_identifier",Config.Config.merchantCode},
+                                { "payee_type","5000"}
+                            };
+                        var req = new Dictionary<string, object>
+                        {
+                            {"nonce_str",Service.Tools.createNonceStr()},
+                            {"biz_content" , biz },
+                            {"method","payment.preorder"},
+                            {"version", "1.0"},
+                            {"timestamp",Service.Tools.createTimeStamp() }
+                    }; 
+                        req.Add("sign", Service.Tools.sign(req));
+                        req.Add("sign_type", "SHA256WithRSA");
+                        return req;
+                    }
+            
+                    public static string createRawRequest(string prepayId)
+                    {
+                        var maps = new Dictionary<string, string>
+                        {
+                            {"appid",Config.Config.merchantAppId },
+                            {"merch_code",Config.Config.merchantCode },
+                            {"nonce_str",Tools.createNonceStr() },
+                            {"prepay_id",prepayId },
+                            {"timestamp",Tools.createTimeStamp() },
+                            {"sign_type","SHA256withRSA" }
+            
+                        };
+                        string[] raw = { };
+                        Dictionary<string, string>.KeyCollection keys = maps.Keys;
+                        foreach (string key in keys)
+                        {
+                            raw = raw.Append(key + "=" + maps[key]).ToArray();
+            
+                        }
+                        Array.Sort(raw);
+                        string sorted = string.Join("&", raw);
+            
+                        return sorted;
+                    }
+            }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('applyFabricTokenService.php');
+            require_once('./utils/tool.php');
+            require_once('./config/env.php');
+            
+            class CreateOrderService
+            {
+                public $req;
+                public $BASE_URL;
+                public $fabricAppId;
+                public $appSecret;
+                public $merchantAppId;
+                public $merchantCode;
+                public $notify_path;
+            
+                function __construct($baseUrl, $req, $fabricAppId, $appSecret, $merchantAppId, $merchantCode)
+                {
+                    $this->BASE_URL = $baseUrl;
+                    $this->req = $req;
+                    $this->fabricAppId = $fabricAppId;
+                    $this->appSecret = $appSecret;
+                    $this->merchantAppId = $merchantAppId;
+                    $this->merchantCode = $merchantCode;
+                    $this->notify_path = "http://"  . $_SERVER['SERVER_NAME'];
+                }
+                /**
+                 * @Purpose: Creating Order
+                 *
+                 * @Param: no parameters it takes from the constructor
+                 * @Return: rawRequest|String
+                 */
+                function createOrder()
+                {
+                    $title = $this->req->title;
+                    $amount = $this->req->amount;
+            
+                    $applyFabricTokenResult = new ApplyFabricToken(
+                        $this->BASE_URL,
+                        $this->fabricAppId,
+                        $this->appSecret,
+                        $this->merchantAppId
+                    );
+            
+                    $result = json_decode($applyFabricTokenResult->applyFabricToken());
+            
+                    $fabricToken = $result->token;
+            
+                    $createOrderResult = $this->requestCreateOrder($fabricToken, $title, $amount);
+            
+                    $prepayId = json_decode($createOrderResult)->biz_content->prepay_id;
+            
+                    $rawRequest = $this->createRawRequest($prepayId);
+            
+                    echo trim((string)$rawRequest);
+                }
+            
+                /**
+                 * @Purpose: Requests CreateOrder
+                 *
+                 * @Param: fabricToken|String title|string amount|string
+                 * @Return: String | Boolean
+                 */
+            
+                function requestCreateOrder($fabricToken, $title, $amount)
+                {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $this->BASE_URL . '/payment/v1/merchant/preOrder');
+                    curl_setopt($ch, CURLOPT_POST, 1);
+            
+                    // Header parameters
+                    $headers = array(
+                        "Content-Type: application/json",
+                        "X-APP-Key: " . $this->fabricAppId,
+                        "Authorization: " . $fabricToken
+                    );
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            
+                    // Body parameters
+                    $payload = $this->createRequestObject($title, $amount);
+            
+                    $data = $payload;
+            
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); // for dev environment only
+            
+                    $server_output = curl_exec($ch);
+            
+                    curl_close($ch);
+            
+                    return $server_output;
+                }
+                /**
+                 * @Purpose: Creating a new merchantOrderId
+                 *
+                 * @Param: no parameters
+                 * @Return: returns a string format of time (UTC)
+                 */
+                function createMerchantOrderId_()
+                {
+                    return (string)time();
+                }
+                /**
+                 * @Purpose: Creating Request Object
+                 *
+                 * @Param: title|String and amount|String
+                 * @Return: Json encoded string
+                 */
+                function createRequestObject($title, $amount)
+                {
+                    $req = array(
+                        'nonce_str' => createNonceStr(),
+                        'method' => 'payment.preorder',
+                        'timestamp' => createTimeStamp(),
+                        'version' => '1.0',
+                        'biz_content' => [],
+                    );
+            
+                    $biz = array(
+                        // 'notify_url' => 'https://www.google.com',
+                        'notify_url' => $this->notify_path . '/api/payment.php', // set your notify end point
+                        'business_type' => 'BuyGoods',
+                        'trade_type' => 'InApp',
+                        'appid' => $this->merchantAppId,
+                        'merch_code' => $this->merchantCode,
+                        'merch_order_id' => $this->createMerchantOrderId_(),
+                        'title' => $title,
+                        'total_amount' => $amount,
+                        'trans_currency' => 'ETB',
+                        'timeout_express' => '120m',
+                        'payee_identifier' => '220311',
+                        'payee_identifier_type' => '04',
+                        'payee_type' => '5000',
+                        // 'redirect_url' => $this->path . '/app/product_list.html'
+                    );
+            
+                    $req['biz_content'] = $biz;
+                    $req['sign_type'] = 'SHA256WithRSA';
+            
+                    $req['sign'] = sign($req);
+            
+                    return json_encode($req);
+                }
+                /**
+                 * @Purpose: Create a rawRequest string for H5 page to start pay
+                 *
+                 * @Param: prepayId returned from the createRequestObject
+                 * @Return: rawRequest|string
+                 */
+                function createRawRequest($prepayId)
+                {
+                    $maps = array(
+                        "appid" => $this->merchantAppId,
+                        "merch_code" => $this->merchantCode,
+                        "nonce_str" => createNonceStr(),
+                        "prepay_id" => $prepayId,
+                        "timestamp" => createTimeStamp(),
+                        "sign_type" => "SHA256WithRSA"
+                    );
+                    
+                    foreach ($maps as $map => $m) {
+                            $rawRequest .= $map . '=' . $m."&";
+                    }
+                    $sign = sign($maps);
+                    // order by ascii in array
+                    $rawRequest = $rawRequest.'sign='. $sign;
+            
+                    return $rawRequest;
+                }
+            }
+            `,
+          },
+        ],
+      },
+      {
+        id: 3,
+        name: "Checkout",
+        description: `Checkout is the third process on payment integration, after create a transaction and ready for payment process`,
+        value: [
+          {
+            id: 1,
+            name: "Python",
+            value: `import requests
+from service import applyFabricTokenService
+import json
+from utils import tools 
+from config import env
+from utils import tools
+class CreateOrderService:
+    req = None;
+    BASE_URL = None
+    fabricAppId = None
+    appSecret = None
+    merchantAppId = None
+    merchantCode = None
+    notify_path = None
+    
+    def __init__(self,req,BASE_URL,fabricAppId,appSecret,merchantAppId,merchantCode):
+        self.req=req
+        self.BASE_URL=BASE_URL
+        self.fabricAppId=fabricAppId
+        self.appSecret=appSecret
+        self.merchantAppId=merchantAppId
+        self.merchantCode=merchantCode
+        self.notify_path = "http://www.google.com"
+    # @Purpose: Creating Order
+    #  *
+    #  * @Param: no parameters it takes from the constructor
+    #  * @Return: rawRequest|String
+    def createOrder(self):
+        title = self.req["title"];
+        amount = self.req["amount"];
+        applyFabricTokenResult = applyFabricTokenService.ApplyFabricTokenService(self.BASE_URL,self.fabricAppId,self.appSecret,self.merchantAppId)
+        result=applyFabricTokenResult.applyFabricToken()
+        fabricToken = result["token"]
+        createOrderResult = self.requestCreateOrder(fabricToken,title,amount)
+        prepayId = createOrderResult["biz_content"]["prepay_id"]
+        rawRequest = self.createRawRequest(prepayId)
+        print(rawRequest)
+        return rawRequest
+    #  * @Purpose: Requests CreateOrder
+    #  *
+    #  * @Param: fabricToken|String title|string amount|string
+    #  * @Return: String | Boolean
+    def requestCreateOrder(self,fabricToken,title,amount):
+        headers = {
+            "Content-Type":"application/json",
+            "X-APP-Key":self.fabricAppId,
+            "Authorization":fabricToken
+        }
+        # Body parameters
+        payload = self.createRequestObject(title,amount)
+        server_output = requests.post(url=self.BASE_URL+"/payment/v1/merchant/preOrder",headers=headers,data=payload,verify=False)
+        return server_output.json()
+    #  * @Purpose: Creating Request Object
+    #  *
+    #  * @Param: title|String and amount|String
+    #  * @Return: Json encoded string
+    def createRequestObject(self,title,amount):
+        req = {
+            "nonce_str":tools.createNonceStr(),
+            "method":"payment.preorder",
+            "timestamp":tools.createTimeStamp(),
+            "version":"1.0",
+            "biz_content":{},   
+        }
+        biz={
+            "notify_url":self.notify_path,
+            "business_type":"BuyGoods",
+            "trade_type":"InApp",
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "merch_order_id":tools.createMerchantOrderId(),
+            "title":title,
+            "total_amount":amount,
+            "trans_currency":"ETB",
+            "timeout_express":"120m",
+            "payee_identifier":"220311",
+            "payee_identifier_type":"04",
+            "payee_type":"5000"
+        }
+        req["biz_content"] = biz
+        req["sign_type"] = "SHA256withRSA"
+        sign = tools.sign(req)
+        req["sign"] = sign
+        print(json.dumps(req))
+        return json.dumps(req)
+    #  * @Purpose: Create a rawRequest string for H5 page to start pay
+    #  *
+    #  * @Param: prepayId returned from the createRequestObject
+    #  * @Return: rawRequest|string
+    def createRawRequest(self,prepayId):
+        maps={
+            "appid":self.merchantAppId,
+            "merch_code":self.merchantCode,
+            "nonce_str":tools.createNonceStr(),
+            "prepay_id":prepayId,
+            "timestamp":tools.createTimeStamp(),
+            "sign_type":"SHA256WithRSA" 
+        }
+        rawRequest=""
+        for key in maps:
+            value = maps[key]
+            rawRequest = rawRequest + key + "=" + value + "&"
+        sign = tools.sign(maps)
+        rawRequest = rawRequest+"sign="+sign
+        return rawRequest`,
+          },
+
+          {
+            id: 2,
+            name: "Node JS",
+            value: `const applyFabricToken = require("./applyFabricTokenService");
+const tools = require("../utils/tools");
+const config = require("../config/config");
+var request = require("request");
+
+exports.createMandetOrder = async (req, res) => {
+    let title = req.body.title;
+    let amount = req.body.amount;
+    let mandateTemplateId = req.body.mandateTemplateId
+    let applyFabricTokenResult = await applyFabricToken();
+    let fabricToken = applyFabricTokenResult.token;
+    const mctContractNo = generateUniqueId()
+    let createOrderResult = await exports.requestCreateOrder(
+        fabricToken,
+        title,
+        amount,
+        mandateTemplateId,
+        mctContractNo
+    );
+    let prepayId = createOrderResult.biz_content.prepay_id;
+    let rawRequest = createRawRequest(prepayId);
+    res.status(200).json({ rawRequest, mctContractNo });
+};
+
+exports.requestCreateOrder = async (fabricToken, title, amount, mandateTemplateId, mctContractNo) => {
+    return new Promise((resolve) => {
+        let reqObject = createRequestObject(title, amount, mandateTemplateId, mctContractNo);
+        var options = {
+            method: "POST",
+            url: config.baseUrl + "/payment/v1/merchant/preOrder",
+            headers: {
+                "Content-Type": "application/json",
+                "X-APP-Key": config.fabricAppId,
+                Authorization: fabricToken,
+            },
+            rejectUnauthorized: false, //add when working with https sites
+            requestCert: false, //add when working with https sites
+            agent: false, //add when working with https sites
+            body: JSON.stringify(reqObject),
+        };
+
+        request(options, function (error, response) {
+            if (error) throw new Error(error);
+            let result = JSON.parse(response.body);
+            resolve(result);
+        });
+    });
+};
+
+function createRequestObject(title, amount, mandateTemplateId, mctContractNo) {
+    let req = {
+        timestamp: tools.createTimeStamp(),
+        nonce_str: tools.createNonceStr(),
+        method: "payment.preorder",
+        version: "1.0",
+    };
+    let biz = {
+        notify_url: "https://developer.ethiotelecom.et/serviceapi/v2/notify",
+        trade_type: "InApp",
+        appid: config.merchantAppId,
+        merch_code: config.merchantCode,
+        merch_order_id: createMerchantOrderId(),
+        title: title,
+        total_amount: amount,
+        trans_currency: "ETB",
+        timeout_express: "120m",
+        payee_identifier: "220311",
+        payee_identifier_type: "04",
+        payee_type: "5000",
+        mandate_data: {
+            mctContractNo: mctContractNo,
+            mandateTemplateId: mandateTemplateId,
+            executeTime: "2023-08-04"
+        },
+        redirect_url: "https://https://developer.ethiotelecom.et/api/v1/notify",
+    };
+    req.biz_content = biz;
+    req.sign = tools.signRequestObject(req);
+    req.sign_type = "SHA256WithRSA";
+    return req;
+}
+
+function createMerchantOrderId() {
+    return new Date().getTime() + "";
+}
+
+function generateUniqueId() {
+    const random = Math.random().toString().substring(2); // Get random number as a string
+    return random;
+}
+
+function createRawRequest(prepayId) {
+    let map = {
+        appid: config.merchantAppId,
+        merch_code: config.merchantCode,
+        nonce_str: tools.createNonceStr(),
+        prepay_id: prepayId,
+        timestamp: tools.createTimeStamp(),
+    };
+    let sign = tools.signRequestObject(map);
+    // order by ascii in array
+    let rawRequest = [
+        "appid=" + map.appid,
+        "merch_code=" + map.merch_code,
+        "nonce_str=" + map.nonce_str,
+        "prepay_id=" + map.prepay_id,
+        "timestamp=" + map.timestamp,
+        "sign=" + sign,
+        "sign_type=SHA256WithRSA",
+    ].join("&");
+    return rawRequest;
+}`,
+          },
+
+          {
+            id: 3,
+            name: "C#",
+            value: `using Demo_Project.Config;
+            using Demo_Project.Models;
+            using Demo_Project.Service;
+            using Microsoft.AspNetCore.DataProtection.KeyManagement;
+            using Microsoft.AspNetCore.Http;
+            using Microsoft.AspNetCore.Http.HttpResults;
+            using Microsoft.AspNetCore.Mvc;
+            using Newtonsoft.Json;
+            using Newtonsoft.Json.Linq;
+            using System.Net.Http.Headers;
+            using System.Text;
+            
+            namespace Demo_Project.Controllers
+            {
+                [Route("api/[controller]")]
+                [ApiController]
+                public class CreateOrderService : ControllerBase
+                {
+                    [HttpPost]
+                    public async Task<string> PostAsync([FromBody] Request request)
+                    {
+                        Console.WriteLine(request);
+                        
+                        string title = request.Title;
+                        string amount = request.Amount;
+                        Console.WriteLine("Title "+title + " Amount "+amount);      
+                        HttpClientHandler httpClientHandler = new HttpClientHandler();
+                        httpClientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                        HttpClient client = new HttpClient(httpClientHandler);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        ApplyFabricTokenService applyFabricTokenService = new ApplyFabricTokenService();
+                        string applyFabricToken = await applyFabricTokenService.PostAsync();
+                        dynamic data = JObject.Parse(applyFabricToken);
+                        string token = data.token;
+                        client.DefaultRequestHeaders.Add("X-APP-Key", Config.Config.fabricAppId);
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        var values = createRequestObject(title, amount);
+                        Console.WriteLine(values);
+                        var jsonValues = JsonConvert.SerializeObject(values);
+                        var content = new StringContent(jsonValues, Encoding.UTF8, "application/json");
+                        var response = await client.PostAsync(Config.Config.baseUrl + "/payment/v1/merchant/preOrder", content);
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        dynamic responseData = JObject.Parse(responseString);
+                        string prePayId = responseData.biz_content.prepay_id;
+                        return createRawRequest(prePayId);
+            
+                    }
+                    public static Dictionary<String, object> createRequestObject(string title, string amount)
+                    {
+                        var biz = new Dictionary<string, string>{
+                                { "trans_currency","ETB"},
+                                { "total_amount",amount},
+                                { "merch_order_id",Service.Tools.createTimeStamp()},
+                                { "appid",Config.Config.merchantAppId},
+                                { "merch_code",Config.Config.merchantCode},
+                                { "timeout_express","120m"},
+                                { "trade_type","InApp"},
+                                { "notify_url","https://www.google.com"},
+                                { "title",title},
+                                { "business_type","BuyGoods"},
+                                { "payee_identifier_type","04"},
+                                { "payee_identifier",Config.Config.merchantCode},
+                                { "payee_type","5000"}
+                            };
+                        var req = new Dictionary<string, object>
+                        {
+                            {"nonce_str",Service.Tools.createNonceStr()},
+                            {"biz_content" , biz },
+                            {"method","payment.preorder"},
+                            {"version", "1.0"},
+                            {"timestamp",Service.Tools.createTimeStamp() }
+                    }; 
+                        req.Add("sign", Service.Tools.sign(req));
+                        req.Add("sign_type", "SHA256WithRSA");
+                        return req;
+                    }
+            
+                    public static string createRawRequest(string prepayId)
+                    {
+                        var maps = new Dictionary<string, string>
+                        {
+                            {"appid",Config.Config.merchantAppId },
+                            {"merch_code",Config.Config.merchantCode },
+                            {"nonce_str",Tools.createNonceStr() },
+                            {"prepay_id",prepayId },
+                            {"timestamp",Tools.createTimeStamp() },
+                            {"sign_type","SHA256withRSA" }
+            
+                        };
+                        string[] raw = { };
+                        Dictionary<string, string>.KeyCollection keys = maps.Keys;
+                        foreach (string key in keys)
+                        {
+                            raw = raw.Append(key + "=" + maps[key]).ToArray();
+            
+                        }
+                        Array.Sort(raw);
+                        string sorted = string.Join("&", raw);
+            
+                        return sorted;
+                    }
+            }
+            }
+            `,
+          },
+
+          {
+            id: 4,
+            name: "PHP",
+            value: `<?php
+            require_once('./service/createOrderService.php');
+            require_once('./service/applyFabricTokenService.php');
+            require_once('./config/env.php');
+            
+            header('content-type:application/json');
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Methods: *");
+            header("Access-Control-Allow-Methods: PUT, GET,DELETE, POST");
+            header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+            
+            $METHOD = $_SERVER['REQUEST_METHOD'];
+            $PATH = $_SERVER['REQUEST_URI'];
+            $REQUEST_PARAMS = json_decode(file_get_contents('php://input'));
+            
+            $createOrderService = new CreateOrderService(
+              $baseUrl = $ENV_Variables['baseUrl'],
+              $req = $REQUEST_PARAMS,
+              $fabricAppId = $ENV_Variables['fabricAppId'],
+              $appSecret = $ENV_Variables['appSecret'],
+              $merchantAppId = $ENV_Variables['merchantAppId'],
+              $merchantCode = $ENV_Variables['merchantCode']
+            );
+            
+            switch ($METHOD) {
+              case 'POST':
+                if ($PATH == "/create/order") {
+                  $createOrderService->createOrder();
+                } else if ($PATH == "/auth/token") {
+                  applyFabricToken($REQUEST_PARAMS);
+                }
+                break;
+            
+              default:
+                echo "WELCOME TO PAYMENT PAGE!";
+                exit;
+            }
+            `,
+          },
+        ],
+      },
+    ],
+  },
+  // MANDET CHECKOUT END
+];
+
+export function getCodeSnippets() {
+  return codes;
+}
+
+export function getCodeSnippet(topic_id, supTopicId) {
+  const filteredPaymentMethod = _.find(codes, (code) => {
+    return code.id === topic_id;
+  });
+
+  const codeSnippets = _.find(filteredPaymentMethod?.value, (f) => {
+    return f.id === supTopicId;
+  });
+
+  return {
+    filteredPaymentMethod,
+    codeSnippets,
+  };
+}
+
+export function getCodeSnippetByPayment(name, paymentMethod, codeId) {
+  if (paymentMethod === null) paymentMethod = "Web Payment (H5) integration";
+
+  const newCode = _.filter(codes, (code) => {
+    return code.name === paymentMethod;
+  });
+  let updateDode = _.find(newCode[0]?.value, (n) => {
+    return n?.id === codeId;
+  });
+
+  const logs = updateDode?.value.filter((f) => f.name === name);
+  console.log({ newCode });
+  return logs[0]?.value;
+}
+
+export async function saveCodeResponse({ data, name, headers, url }) {
+  // console.log({ data, name, headers, url });
+  // const {data:respnse} = await axios({
+  //   method: 'post',
+  //   headers,
+  //   url,
+  //   data
+  // });
+
+  // return await respnse
+  if (name === "ApplyFabricToken") {
+    return {
+      token: "Bearer 94cc42bee412696d754508c06ca1db20",
+      effectiveDate: Date.now().toString(),
+      expirationDate: (Date.now() + 300).toString(),
+    };
+  } else if (name === "CreateOrder") {
+    return {
+      result: "SUCCESS",
+      code: "0",
+      msg: "Success",
+      nonce_str:
+        "DB9M5w4DrrLL9jNjWeyLEIcyCyow6B4bflCplYw67HI96vaGtJzlSuPF9xskRbC4ecTRBLaMFjWkVSZ5sd9jui/GzgSRkXD6slWDVzSs0Oy0L5I4uoUxVZlF6h3HlyipR9VYF+gq3KMPB2wOzOh3RvV1iqUwmcbifoyIf1/gUIjxqLDH+HVC2iF8fJPw66PQx74cOoWbsNCdOl6HV43b+jLq4FtNNMvXbHtbQkwvDr8oFRbCa8/4B/bvt3oimqOyOEwCP1DFPBnyf+ZfwdekBUt3rCkaSUeMS3dIATnfAh/kVlEQlis9Bl6bNCT3c9BRKE5PJjtmSjc2JWNNYF2KcQ==",
+      sign: "BC4EE8D710BAC6A7E33DE4511A1CE77230EF",
+      sign_type: "SHA256WithRSA",
+      biz_content: {
+        merch_order_id: "201907151435001",
+        prepay_id: "007a6bd3175cdb3c658545a4f3f8q87c87483",
+      },
+    };
+  } else if (condition) {
+    return {
+      rawRequest: "",
+    };
+  }
+}

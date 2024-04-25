@@ -1,0 +1,60 @@
+.ProfileSidenav-Modal {
+  /* display: none; */
+  position: fixed;
+  z-index: 1010;
+  background-color: white;
+  width: 14%;
+  height: 100%;
+  border: 0.2px solid #ccc;
+  right: 0%;
+  top: 0%;
+  box-sizing: border-box;
+  /* transform: translateX(45em); */
+  transition: all 0.5s ease-out;
+}
+
+.ProfileSidenav-Modal-Open {
+  transform: translatex(0);
+}
+
+.ProfileSidenav-Modal-Close {
+  transform: translatex(100%);
+}
+
+.ProfileSidenav-modal-header {
+  @apply font-bold text-xl flex justify-center items-center;
+  width: 100%;
+  height: 170px;
+  position: relative;
+  color: rgba(3, 3, 3, 0.534);
+}
+
+.ProfileSidenav-modal-header > span {
+  @apply absolute top-2 right-4 text-2xl;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ProfileSidenav-modal-body {
+  padding-top: 15px;
+  padding-left: 30px;
+}
+
+.ProfileSidenav-modal-footer {
+  height: 50px;
+  background-color: #efeded;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding-right: 15px;
+  padding-left: 10px;
+  position: absolute;
+  bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .ProfileSidenav-Modal {
+    width: 85%;
+  }
+}

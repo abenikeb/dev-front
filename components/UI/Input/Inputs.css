@@ -1,0 +1,4 @@
+.input-style {
+  @apply input input-bordered;
+  width: 100%;
+}

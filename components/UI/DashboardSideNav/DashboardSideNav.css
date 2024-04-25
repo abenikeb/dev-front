@@ -1,0 +1,54 @@
+.DashboardSideNav-Modal {
+  @apply sm:hidden;
+  position: fixed;
+  background-color: white;
+  width: 14%;
+  height: 90vh;
+  border: 0.2px solid #ccc;
+  left: 0%;
+  top: 0%;
+  box-sizing: border-box;
+  transition: all 0.5s ease-out;
+}
+
+.DashboardSideNav-Modal-Open {
+  transform: translatex(0);
+}
+
+.DashboardSideNav-Modal-Close {
+  transform: translatex(-100%);
+}
+
+.DashboardSideNav-modal-header {
+  @apply font-bold text-xl flex justify-center items-center z-auto;
+  width: 100%;
+  height: 10px;
+  position: relative;
+  color: rgba(3, 3, 3, 0.534);
+}
+
+.DashboardSideNav-modal-header > span {
+  @apply absolute top-0 right-2;
+  font-size: large;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.DashboardSideNav-modal-body {
+  margin-top: 10px;
+  padding-top: 25px;
+  padding-left: 20px;
+  z-index: 3000;
+}
+
+
+@media (max-width: 600px) {
+  .DashboardSideNav-Modal {
+    @apply sm:hidden;
+    z-index: 5000 !important;
+    width: 90%;
+    height: 100%;
+    left: 0%;
+    top: 0%;
+  }
+}
