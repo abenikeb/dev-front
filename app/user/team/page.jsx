@@ -442,6 +442,7 @@ const Teams = () => {
   };
 
   const onFinish = async (values) => {
+    setLoading(true);
     let additionalParams = {
       otp: "default",
       verifyed: true,
@@ -459,6 +460,8 @@ const Teams = () => {
         message.success("Team Added successfully!");
         setIsModalOpen(false);
         form.resetFields();
+
+        window.location.reload();
       } else {
         message.error("Failed to Add. Please try again.");
       }
@@ -474,6 +477,8 @@ const Teams = () => {
         );
         setIsModalOpen(false);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -630,7 +635,7 @@ const Teams = () => {
           }
 
           setDataSource(formattedData);
-          setSelectedTeam(formattedData[0]); // Default to the first team
+          setSelectedTeam(formattedData[0]);
         }
       } catch (error) {
         console.error("Error fetching team data:", error);
@@ -762,7 +767,7 @@ const Teams = () => {
             />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Enter Verification Code"
             style={{ marginBottom: 0 }}
           >
@@ -798,7 +803,7 @@ const Teams = () => {
                   : "Send"}
               </button>
             </Form.Item>
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item label="Full Name" style={{ marginBottom: 0 }}>
             <Form.Item
@@ -830,7 +835,7 @@ const Teams = () => {
               ]}
             >
               <Input
-                placeholder="Last Name"
+                placeholder="Father Name"
                 type="text"
                 onChange={(e) => setLastName(e.target.value)}
                 value={lastName}
@@ -845,9 +850,11 @@ const Teams = () => {
           >
             <Input placeholder="Password" type="password" />
           </Form.Item>
+
           <Form.Item name="tel" label="Phone">
             <Input placeholder="Phone" type="text" />
           </Form.Item>
+
           <Form.Item
             name="userId"
             initialValue={userId}
@@ -859,6 +866,7 @@ const Teams = () => {
               value={userId}
             />
           </Form.Item>
+
           <Form.Item
             name="instanceId"
             initialValue={instanceId}
@@ -866,6 +874,7 @@ const Teams = () => {
           >
             <Input type="hidden" value="instanceId" />
           </Form.Item>
+
           <Form.Item
             name="accountTenantId"
             initialValue="accountTenantId"
@@ -873,6 +882,7 @@ const Teams = () => {
           >
             <Input type="hidden" value="accountTenantId" />
           </Form.Item>
+
           <Form.Item
             name="languageLocaleKey"
             initialValue="languageLocaleKey"
@@ -880,6 +890,7 @@ const Teams = () => {
           >
             <Input type="hidden" value="languageLocaleKey" />
           </Form.Item>
+
           <Form.Item
             name="role"
             label="Role"
@@ -891,12 +902,20 @@ const Teams = () => {
           </Form.Item>
           <div className="w-full flex justify-end">
             <span></span>
-            <button
+            {/* <button
               type="submit"
               className="btn btn-sm bg-lime-500 text-white hover:bg-lime-600"
             >
               Add Member
-            </button>
+            </button> */}
+            <Button
+              type="default"
+              htmlType="submit"
+              loading={loading}
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Add Member"}
+            </Button>
           </div>
         </Form>
       </Modal>
@@ -951,21 +970,6 @@ const Teams = () => {
                     Join Organization
                   </button>
                 </div>
-                {/* <div className="flex flex-wrap justify-center items-center space-x-4">
-                  <button
-                    onClick={handleCreateTeam}
-                    className="btn btn-sm bg-lime-500 text-white text-sm hover:bg-lime-600"
-                  >
-                    Create New Organization
-                  </button>
-
-                  <button
-                    onClick={handleOpenJoinTeam}
-                    className="btn btn-sm bg-white text-lime-500 border border-lime-500 text-sm hover:border-lime-600 hover:text-lime-600"
-                  >
-                    Join Organization
-                  </button>
-                </div> */}
 
                 <JoinTeamModal
                   visible={joinTeamModalVisible}

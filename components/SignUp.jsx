@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-// import Button from "./UI/Button/Button";
+
 import { Button } from "antd";
 import withErrorHandler from "@hoc/withErrorHandler/withErrorHandler";
 
@@ -136,7 +136,8 @@ const SignUpForm = ({
               name="emailVerification"
               onChange={onChange}
               value={data.emailVerification}
-              type="text"
+              type="number"
+              min="0"
               placeholder="Enter Verification Code *"
               className="form_input_inline"
             />

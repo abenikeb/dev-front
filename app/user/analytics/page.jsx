@@ -44,7 +44,7 @@ const AnalyticsPage = () => {
   const prepareLastWeekChartData = () => {
     const currentDate = new Date();
     const threeMonthsAgo = new Date(
-      currentDate.getTime() - 90 * 24 * 60 * 60 * 1000
+      currentDate.getTime() - 150 * 24 * 60 * 60 * 1000
     );
 
     const lastThreeMonthsUserData = userData.filter((item) => {
@@ -93,7 +93,7 @@ const AnalyticsPage = () => {
   const processLastWeekData = () => {
     const currentDate = new Date();
     const oneWeekAgo = new Date(
-      currentDate.getTime() - 90 * 24 * 60 * 60 * 1000
+      currentDate.getTime() - 150 * 24 * 60 * 60 * 1000
     );
 
     const lastWeekUserData = userData.filter((item) => {

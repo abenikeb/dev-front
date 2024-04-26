@@ -78,14 +78,15 @@ export const authCheckState = () => {
   if (!token_) {
     return logout();
   } else {
-    const expDate = new Date(Cookies.get(expirationDate));
-    if (expDate < new Date()) {
-      return logout();
-    } else {
-      return checkAuthTimeOut(
-        (expDate.getTime() - new Date().getTime()) / 1000
-      );
-    }
+    console.log("TOKEN EXPIRATION ENDUP");
+    // const expDate = new Date(Cookies.get(expirationDate));
+    // if (expDate < new Date()) {
+    //   return logout();
+    // } else {
+    //   return checkAuthTimeOut(
+    //     (expDate.getTime() - new Date().getTime()) / 1000
+    //   );
+    // }
   }
 };
 
