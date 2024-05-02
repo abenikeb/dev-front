@@ -49,12 +49,18 @@ const navLink = [
     icon: "/assets/icons/mobile-faq.svg",
     isProtectedRoute: false,
   },
-  {
-    title: "Forum",
-    path: "/user/forum",
-    icon: "/assets/icons/mobile-forum.svg",
-    isProtectedRoute: false,
-  },
+  // {
+  //   title: "Forum",
+  //   path: "/user/forum",
+  //   icon: "/assets/icons/mobile-forum.svg",
+  //   isProtectedRoute: false,
+  // },
+  // {
+  //   title: "Support",
+  //   path: "/user/support",
+  //   icon: "/assets/icons/mobile-forum.svg",
+  //   isProtectedRoute: false,
+  // },
   {
     title: "Team",
     path: "/user/team",
@@ -130,13 +136,13 @@ const Nav = () => {
       {/* <Menu.Item key="settings" className="mt-2 pl-5 font-semibold">
         <Link href="/user/home">Settings</Link>
       </Menu.Item> */}
-      <Menu.Item
+      {/* <Menu.Item
         key="settings"
         className="mt-2 pl-5 font-semibold"
         icon={<UserOutlined />}
       >
         <Link href="/user/analytics">Users Settings</Link>
-      </Menu.Item>
+      </Menu.Item> */}
     </Menu>
   );
 

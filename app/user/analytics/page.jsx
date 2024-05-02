@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
-import { Layout, Row, Col, Card, Table, Button, Input } from "antd";
+import { Layout, Row, Col, Card, Table, Button, Input, message } from "antd";
+import { CopyOutlined } from "@ant-design/icons";
 import { Tag } from "antd";
 import { DownloadOutlined, SearchOutlined } from "@ant-design/icons";
 import http from "@app/api-services/httpService";
 import "chart.js/auto";
+import copy from "copy-to-clipboard";
 const { Content } = Layout;
 const { Search } = Input;
 
@@ -90,14 +92,38 @@ const AnalyticsPage = () => {
     };
   };
 
+  const handleCopy = (text) => {
+    copy(text); // Copy the text to clipboard
+    message.success("TenantId copied to clipboard");
+  };
+
+  // const processLastWeekData = () => {
+  //   const currentDate = new Date();
+  //   const oneWeekAgo = new Date(
+  //     currentDate.getTime() - 150 * 24 * 60 * 60 * 1000
+  //   );
+
+  //   const lastWeekUserData = userData.filter((item) => {
+  //     const createdAtDate = new Date(item.createdAt);
+  //     return createdAtDate >= oneWeekAgo;
+  //   });
+
+  //   const lastWeekOrganizationData = organizationData.filter((item) => {
+  //     const createdAtDate = new Date(item.createdAt);
+  //     return createdAtDate >= oneWeekAgo;
+  //   });
+
+  //   setLastWeekUserData(lastWeekUserData);
+  //   setLastWeekOrganizationData(lastWeekOrganizationData);
+  // };
   const processLastWeekData = () => {
     const currentDate = new Date();
     const oneWeekAgo = new Date(
       currentDate.getTime() - 150 * 24 * 60 * 60 * 1000
     );
 
-    const lastWeekUserData = userData.filter((item) => {
-      const createdAtDate = new Date(item.createdAt);
+    const lastWeekUserData = userData.filter((user) => {
+      const createdAtDate = new Date(user.createdAt);
       return createdAtDate >= oneWeekAgo;
     });
 
@@ -106,7 +132,20 @@ const AnalyticsPage = () => {
       return createdAtDate >= oneWeekAgo;
     });
 
-    setLastWeekUserData(lastWeekUserData);
+    const lastWeekUserDataWithCreatedOrg = lastWeekUserData.map((user) => {
+      console.log({
+        createdEmail: user.email,
+      });
+      const createdOrg = lastWeekOrganizationData.find(
+        (org) => org.contactEmail === user.email
+      );
+      return {
+        ...user,
+        created_org: createdOrg ? createdOrg.companyName : null,
+      };
+    });
+
+    setLastWeekUserData(lastWeekUserDataWithCreatedOrg);
     setLastWeekOrganizationData(lastWeekOrganizationData);
   };
 
@@ -171,6 +210,7 @@ const AnalyticsPage = () => {
       key: "tel",
       render: (text) => `+251 ${text}`,
     },
+
     {
       title: "Role",
       dataIndex: "role",
@@ -183,6 +223,17 @@ const AnalyticsPage = () => {
           {text}
         </Tag>
       ),
+    },
+    {
+      title: "Org Name",
+      dataIndex: "created_org",
+      key: "created_org",
+      render: (text, record) => {
+        const boldStyle = text
+          ? { fontWeight: "normal", color: "black" }
+          : { fontWeight: "normal", color: "gray" };
+        return <span style={boldStyle}>{text ? text : "Not Created"}</span>;
+      },
     },
     {
       title: "Registration Date",
@@ -236,6 +287,30 @@ const AnalyticsPage = () => {
       title: "contactEmail",
       dataIndex: "contactEmail",
       key: "contactEmail",
+    },
+    {
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
+    },
+    {
+      title: "TenantId",
+      dataIndex: "axisTenantId",
+      key: "axisTenantId",
+      render: (text, record) => (
+        <>
+          <span>
+            {text && text.length > 13 ? text.slice(0, 13) + "..." : text}
+          </span>
+          {text && (
+            <Button
+              icon={<CopyOutlined />}
+              onClick={() => handleCopy(text)}
+              style={{ marginLeft: 8 }}
+            />
+          )}
+        </>
+      ),
     },
     {
       title: "short_code",

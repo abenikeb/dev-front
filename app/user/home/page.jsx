@@ -20,6 +20,7 @@ import { toast } from "react-toastify";
 import { Modal } from "antd";
 import JoinTeamModal from "./../team/JoinTeamModal";
 import http from "@app/api-services/httpService";
+import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -39,7 +40,7 @@ const Home = () => {
   const complete = completeStatus;
   const [userId, setUserId] = useState();
   const [dummy, setDummy] = useState(true);
-  const base_url = "https://developer.ethiotelecom.et/v2";
+  const base_url = `${API_END_POINT}`;
 
   const checkMerchantStatus = async (user_id) => {
     try {

@@ -20,6 +20,7 @@
     "axios": "^1.4.0",
     "config": "^3.3.9",
     "cookie": "^0.6.0",
+    "copy-to-clipboard": "^3.3.3",
     "dompurify": "^3.1.0",
     "dotenv": "^16.3.1",
     "framer-motion": "^10.14.0",
@@ -49,6 +50,7 @@
     "tailwindcss": "3.3.2"
   },
   "devDependencies": {
-    "daisyui": "^3.0.1"
+    "daisyui": "^3.0.1",
+    "typescript": "5.4.5"
   }
 }

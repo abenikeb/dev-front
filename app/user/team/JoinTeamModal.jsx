@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Modal, Input, Button } from "antd";
-import axios from "axios";
+import { Modal, Input, Button, message, Spin } from "antd";
 import { getUserData } from "@app/api-services/authService";
-import { message } from "antd";
 import http from "@app/api-services/httpService";
-
 import { CheckOutlined } from "@ant-design/icons";
+import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const JoinTeamModal = ({ visible, handleCancel }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,14 +11,13 @@ const JoinTeamModal = ({ visible, handleCancel }) => {
   const [joinButtonDisabled, setJoinButtonDisabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [teamOwner, setTeamOwner] = useState(null);
-
   const handleSearchChange = async (value) => {
     setSearchTerm(value);
     setTeamOwner(null);
 
     try {
       const { data } = await http.get(
-        `https://developer.ethiotelecom.et/v2/merchant-info/check-developer?name=${value}`
+        `${API_END_POINT}/merchant-info/check-developer?name=${value}`
       );
 
       setSearchResult(
@@ -30,9 +27,6 @@ const JoinTeamModal = ({ visible, handleCancel }) => {
       );
 
       if (data !== "" && data?.developerTeamName) {
-        console.log({
-          data,
-        });
         setTeamOwner({
           name: `${data.fullName}`,
           email: `${data.contactEmail}`,
@@ -54,26 +48,27 @@ const JoinTeamModal = ({ visible, handleCancel }) => {
     setLoading(true);
     try {
       const { data } = await http.post(
-        `https://developer.ethiotelecom.et/v2/user/request-join-User`,
+        `${API_END_POINT}/user/request-join-User`,
         {
           searchTerm,
           userId: getUserData().id,
         }
       );
 
-      console.log("Data response:", data);
-      message.success("Team join request sent successfully");
-
-      handleCancel();
-      setSearchTerm("");
-      setTeamOwner(null);
-      window.location.href = "/user/team";
+      setTimeout(() => {
+        setLoading(false);
+        message.success("Team join request sent successfully");
+        handleCancel();
+        setSearchTerm("");
+        setTeamOwner(null);
+        window.location.href = "/user/team";
+      }, 2000);
     } catch (error) {
       if (error.status === 400) {
-        message.error(error?.data);
+        message.error("Error sending team join request");
         console.log("Error sending team join request:", error?.data);
       } else {
-        message.error(error?.response.data);
+        message.error("Error sending team join request");
         console.log("Error sending team join request:", error?.response.data);
       }
     } finally {
@@ -94,17 +89,18 @@ const JoinTeamModal = ({ visible, handleCancel }) => {
         >
           Cancel
         </button>,
-        <button
+        <Button
           className={`btn btn-sm ${
             searchResult === "Available"
               ? "bg-green-500 text-white font-bold"
               : "bg-green-500 text-white"
           } text-sm hover:bg-lime-600`}
           onClick={handleSearchTeam}
-          disabled={joinButtonDisabled}
+          disabled={loading || searchTerm === ""}
+          icon={loading && <Spin />}
         >
           Request to Join
-        </button>,
+        </Button>,
       ]}
     >
       <p className="mb-1">Search and join the team.</p>

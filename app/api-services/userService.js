@@ -6,7 +6,7 @@ const apiEndpoint = _env.API_END_POINT;
 
 const apiUrl = apiEndpoint + "/user/signup";
 const apiVerifyUrl = apiEndpoint + "/verification/send";
-const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info/";
+const merchantUrl = `${apiEndpoint}/merchant-info/`;
 function userUrl(id) {
   return `${apiEndpoint}/user/${id}`;
 }
@@ -73,7 +73,7 @@ export function registerOnManagementConsole(
     agent_id,
   });
 }
-// await axios.get(`https://developer.ethiotelecom.et/v2/appCubeUser/${userId}`)
+
 export async function checkUserStatus(user_id) {
   return await http.get(merchantUrl + user_id);
 }

@@ -32,7 +32,7 @@ const Dashboard = ({ post }) => {
   const [isUserLogin, setIsUserLogin] = useState(false);
   const [user, setUser] = useState(null);
 
-  const [credentials, setCredentials] = useState(null); //Including RSA Private and Public Keys
+  const [credentials, setCredentials] = useState(null);
   const [copied, setCopied] = useState({
     merchant_id: false,
     fabric_app_id: false,
@@ -59,7 +59,6 @@ const Dashboard = ({ post }) => {
   async function startUp() {
     try {
       // authCheckState();
-
       const topics = getTopics();
       setTopics(topics);
 
@@ -68,15 +67,23 @@ const Dashboard = ({ post }) => {
       setCodeSnippets(codeSnippets); // set the code snipets with out filtering the languages
 
       const userInfo = getUserData();
+      let user_id;
+
+      if (userInfo.role === "admin" || userInfo.role === "Admin") {
+        user_id = userInfo.id;
+      } else if (userInfo.role === "Developer") {
+        user_id = userInfo.userId;
+      }
+
       setUser(userInfo);
       if (userInfo !== null) {
         setIsUserLogin(true);
-        const { data } = await getCredential(userInfo?.id);
+        const { data } = await getCredential(user_id);
         console.log("user data", data);
         setCredentials(data);
       } else {
         setIsUserLogin(false);
-        router.push("/");
+        return router.push("/guest/login");
       }
     } catch (ex) {
       console.log("ERROR", ex);

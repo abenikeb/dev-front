@@ -40,7 +40,7 @@ const RegisterModal = (props) => {
       <ToastContainer />
       {props.showPopup && (
         <dialog id="register_modal" className="modal">
-          <div className="modal-box w-11/12 max-w-5xl">
+          <div className="modal-box w-3/4 max-w-4xl">
             <h3 className="font-bold text-xl">Create Organization Account</h3>
             <CompleteRegistrationForm
               data={userData}

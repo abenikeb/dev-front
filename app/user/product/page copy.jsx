@@ -18,10 +18,14 @@ import Cookies from "js-cookie";
 import { Modal } from "antd";
 import JoinTeamModal from "./../team/JoinTeamModal";
 import http from "@app/api-services/httpService";
+import { Carousel } from "antd";
+import { API_END_POINT } from "@app/api-services/httpConstant";
 
-const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
+const merchantUrl = `${API_END_POINT}/merchant-info`;
 // const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
-export const appcube_base_url = "https://196.188.120.4:32000";
+// export const appcube_base_url = "https://196.188.120.4:32000";
+export const appcube_base_url =
+  "https://telebirrminiappmanagement.ethiotelecom.et:32000";
 // const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
 
 // authCheckState();
@@ -55,7 +59,7 @@ const Product = () => {
   const [userId, setUserId] = useState();
   const [user, setUser] = useState(null);
 
-  const base_url = "https://developer.ethiotelecom.et/v2";
+  const base_url = `${API_END_POINT}`;
 
   const returnInstanceUrl = () => {
     const instanceUrl =
@@ -81,30 +85,6 @@ const Product = () => {
     }
   };
 
-  const checkCurentMerchantStatus = async (user_id) => {
-    try {
-      const response = await checkUserStatus(user_id);
-      const status = response.data.status;
-
-      const { data } = await http.get(`${base_url}/user/${user_id}`);
-      console.log({ data, status });
-      if (data && data.status === "active") {
-        setCompleteStatus("pending");
-        setTeamUserInfo({
-          status: "active",
-          tenantId: data.appcube_tenant_Id,
-          instanceUrl: data.instanceUrl,
-        });
-        return;
-      }
-
-      setCompleteStatus(status);
-      console.log("complete status " + status);
-    } catch (ex) {
-      console.error(`Error:`, ex);
-    }
-  };
-
   const MiniAppSteps = [
     {
       id: 1,
@@ -125,25 +105,6 @@ const Product = () => {
         },
       },
     },
-    // {
-    //   id: 2,
-    //   name: "Develop Mini App on Clouds",
-    //   options: {
-    //     option1: {
-    //       name: "On vsCode",
-    //       href: "https://developer.ethiotelecom.et/docs/category/mini-app-devlopment-guide",
-    //     },
-    //     option2: {
-    //       name: "On Low code platform",
-    //       href: `${
-    //         merchant?.instanceUrl ||
-    //         (teamUserInfo &&
-    //           teamUserInfo.status === "active" &&
-    //           teamUserInfo.instanceUrl)
-    //       }`,
-    //     },
-    //   },
-    // },
 
     {
       id: 3,
@@ -211,6 +172,33 @@ const Product = () => {
   const handlePaymentStepClick = (id) => {
     console.log(id);
     setCurrentPaymentStep(id);
+  };
+
+  const checkCurentMerchantStatus = async (user_id) => {
+    try {
+      const response = await checkUserStatus(user_id);
+      let status = response.data.status;
+
+      const { data } = await http.get(`${base_url}/user/${user_id}`);
+      if (data.userId) {
+        status = data.status;
+      }
+      console.log({ data, status, user_id });
+      if (data && status === "active") {
+        setCompleteStatus("pending");
+        setTeamUserInfo({
+          status: "active",
+          tenantId: data.appcube_tenant_Id,
+          instanceUrl: data.instanceUrl,
+        });
+        return;
+      }
+
+      setCompleteStatus(status);
+      console.log("complete status " + status);
+    } catch (ex) {
+      console.error(`Error:`, ex);
+    }
   };
 
   const atStartUp = async () => {
@@ -293,7 +281,6 @@ const Product = () => {
       redirectSSOToManagementConsole();
     } else if (typeof completeStatus === "undefined") {
       setIncompletePopup(true);
-      // redirectSSOToManagementConsole();
     }
   };
 
@@ -341,19 +328,26 @@ const Product = () => {
   return (
     <>
       <ToastContainer />
-      <div>
-        <div className="carousel w-100">
-          <div id="item1" className="carousel-item w-full flex-center">
+      {/* Banner */}
+      <div className="w-3/4 md:w-1/2 mx-auto">
+        <Carousel autoplay>
+          <div className="w-full flex-center">
             <img
-              className="rounded-md w-1/2"
+              className="rounded-lg"
               src="/assets/images/newBanner.jpeg"
+              alt="Banner 1"
             />
           </div>
-          <div id="item2" className="carousel-item w-full flex-center">
-            <img src="/assets/images/newBanner.jpeg" />
+          <div className="w-full flex-center">
+            <img
+              className="rounded-lg"
+              src="/assets/images/newBanner.jpeg"
+              alt="Banner 1"
+            />
           </div>
-        </div>
+        </Carousel>
       </div>
+
       <div className="tabs mt-5 mb-0 flex-center">
         {tabs.map((tab) => (
           <a
@@ -366,15 +360,16 @@ const Product = () => {
           </a>
         ))}
       </div>
+
       {/* Payment Tab */}
-      <div className="tab-content " id="2">
+      <div className="tab-content" id="2">
         <CardWithButton
           title="Payment"
           description={`telebirr is a mobile financial services platform that allows individuals and businesses to make and receive payments, buy airtime, and access a range of financial services. \n The platform offers four integration options that make it easy for developers to integrate telebirr's payment gateway into their applications.\n When your mini APP needs to support payment via telebirr, it should follow the guide step by step to integrate.`}
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="w-full flex flex-col md:flex-row">
           {/* left card */}
-          <div className="card w-auto bg-base-100 shadow-xs border-none">
+          <div className="card w-full mx-auto md:w-[46%] bg-base-100 shadow-xs border-none">
             <div className="card-body">
               <h2 className="card-title flex-center">Payment Details</h2>
               <ul className="steps steps-vertical">
@@ -411,7 +406,7 @@ const Product = () => {
             </div>
           </div>
           {/* right card */}
-          <div className="card w-auto bg-base-100 shadow-xs mr-2 border-none">
+          <div className="card w-full mx-auto md:w-[46%] bg-base-100 shadow-xs border-none">
             <div className="card-body">
               <h2 className="card-title flex-center">Tools</h2>
               <div className="p-10">
@@ -504,8 +499,8 @@ const Product = () => {
           handleButtonClick={handleRouting}
           // handleButtonClick={useManagementConsole}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <div className="card w-auto bg-base-100 shadow-xs border-none">
+        <div className="w-full flex flex-col md:flex-row">
+          <div className="card w-full mx-auto md:w-[46%] bg-base-100 shadow-xs border-none">
             <div className="card-body">
               <h2 className="card-title flex-center">
                 Mini App Development Tour
@@ -562,7 +557,7 @@ const Product = () => {
             </div>
           </div>
           {/* right card */}
-          <div className="card w-auto bg-base-100 shadow-xs mr-2 border-none">
+          <div className="card w-full mx-auto md:w-[46%] bg-base-100 shadow-xs border-none">
             <div className="card-body">
               <h2 className="card-title flex-center">Development Tools</h2>
               <div className="p-10">
@@ -625,6 +620,7 @@ const Product = () => {
           </div>
         </div>
       </div>
+
       {incompletePopup === true && (
         <Modal
           title=""

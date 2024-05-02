@@ -1,16 +1,17 @@
 "use client";
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams } from "next/navigation";
 // import { useQuery } from "next/navigation";
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { message } from "antd";
 import Link from "next/link";
 import axios from "axios";
+import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const PasswordResetPage = () => {
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [newPassword, setNewPassword] = useState("");
@@ -28,18 +29,17 @@ const PasswordResetPage = () => {
   // }, [router.query]);
 
   useEffect(() => {
-   
     // Extracting query parameters from the pathname
-    const pathname = searchParams.get('token')
-    console.log({pathname})
+    const pathname = searchParams.get("token");
+    console.log({ pathname });
     const queryStartIndex = pathname.indexOf("?");
     if (queryStartIndex !== -1) {
       const queryString = pathname.substring(queryStartIndex + 1);
       const queryParams = new URLSearchParams(queryString);
       const queryToken = queryParams.get("token");
 
-      console.log({queryToken})
-      
+      console.log({ queryToken });
+
       if (queryToken) {
         setToken(queryToken);
       }
@@ -63,14 +63,12 @@ const PasswordResetPage = () => {
         return;
       }
 
-     
-
       console.log({
-        token__s:token
-      })
+        token__s: token,
+      });
 
       const response = await axios.post(
-        "https://developer.ethiotelecom.et/v2/user/reset-password",
+        `${API_END_POINT}/user/reset-password`,
         {
           token,
           newPassword,
@@ -178,7 +176,7 @@ const PasswordResetPage = () => {
 // };
 
 // PasswordResetPage.getInitialProps = async ({ query }) => {
- 
+
 //   const { token } = query;
 //    console.log({
 //     query,

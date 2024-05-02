@@ -14,6 +14,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import { update, updatePassword } from "@app/api-services/userService";
 import { MiniLoading } from "@components/UI/miniLoading";
 import axios from "axios";
+import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const Profile = () => {
   const [isUserLogin, setIsUserLogin] = useState(false);
@@ -141,7 +142,7 @@ const Profile = () => {
       });
 
       const response = await axios.post(
-        `https://developer.ethiotelecom.et/v2/user/upload/${user.id}`,
+        `${API_END_POINT}/user/upload/${user.id}`,
         formData,
         {
           headers: {

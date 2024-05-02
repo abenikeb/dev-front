@@ -7,60 +7,88 @@ import { getUserData } from "@app/api-services/authService";
 import { checkUserStatus } from "@app/api-services/userService";
 import Modal from "@components/Modal";
 import RegisterModal from "@components/RegisterModal";
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
+import http from "@app/api-services/httpService";
+import { API_END_POINT } from "@app/api-services/httpConstant";
+
+const base_url = `${API_END_POINT}`;
+
 const ApiCard = (props) => {
   const router = useRouter();
   const [incompletePopup, setIncompletePopup] = useState(false);
   const [modalPopup, setModalPopup] = useState(false);
   const [completeStatus, setCompleteStatus] = useState();
-  const complete = completeStatus;
   const [userId, setUserId] = useState();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+
   const checkMerchantStatus = async (user_id) => {
     try {
-      const response = await checkUserStatus(user_id);
-      const status = response.data.status;
-      setCompleteStatus(status);
-      console.log("complete status " + status);
-    } catch (ex) {
-      if (ex.response?.status === 400) {
-        console.log("EX", ex);
+      const [userStatusResponse, userDataResponse] = await Promise.all([
+        checkUserStatus(user_id),
+        http.get(`${base_url}/user/${user_id}`),
+      ]);
+
+      const userStatus = userStatusResponse.data.status;
+      const userData = userDataResponse.data;
+
+      const status = userData.userId ? userData.status : userStatus;
+
+      if (
+        (userData.userId && status === "active") ||
+        (userData.userId && status === "approved")
+      ) {
+        setCompleteStatus("completed");
       } else {
-        console.log("something went wrong", ex);
+        setCompleteStatus(status);
       }
-    } finally {
+    } catch (ex) {
+      console.error(`Error:`, ex);
     }
   };
-  function atStartUp() {
-    const userInfo = getUserData();
-    setUser(userInfo);
-    const user_id = userInfo?.id;
-    setUserId(user_id);
-  }
+
+  const atStartUp = async () => {
+    try {
+      const userInfo = getUserData();
+      let user_id;
+
+      if (userInfo.role === "admin" || userInfo.role === "Admin") {
+        user_id = userInfo.id;
+      } else if (userInfo.role === "Developer") {
+        user_id = userInfo.userId;
+      }
+
+      if (!user_id) {
+        return router.push("/guest/login");
+      }
+
+      setIsModalVisible(true);
+      setUser(userInfo);
+      setUserId(user_id);
+    } catch (error) {
+      console.error("An error occurred during startup:", error);
+    }
+  };
 
   useEffect(() => {
     atStartUp();
   }, []);
+
   useEffect(() => {
-    if (userId) {
-      checkMerchantStatus(userId);
+    const userInfo = getUserData();
+    if (userInfo?.id) {
+      checkMerchantStatus(userInfo.id);
     }
   }, [userId, completeStatus]);
+
   const handleRouting = () => {
-    console.log("run clicked");
-    console.log(completeStatus);
     if (completeStatus === "completed") {
       setIncompletePopup(false);
       setModalPopup(false);
       setLoading(true);
-      console.log("completed");
       router.push("/user/dashboard");
-      setTimeout(() => {
-        setLoading(false);
-      }, 1000);
+      setLoading(false);
     } else if (completeStatus === "pending") {
       setModalPopup(true);
     } else if (completeStatus === undefined) {
@@ -68,6 +96,7 @@ const ApiCard = (props) => {
       setIncompletePopup(true);
     }
   };
+
   const showSuccessToast = () => {
     toast.success("Company Registered Successfuly. Please wait for Approval.");
   };
@@ -76,7 +105,6 @@ const ApiCard = (props) => {
   };
   const handleCloseModal = () => {
     setModalPopup(false);
-    // console.log("close initiatied");
   };
   return (
     <>

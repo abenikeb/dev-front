@@ -19,11 +19,13 @@ import { Modal } from "antd";
 import JoinTeamModal from "./../team/JoinTeamModal";
 import http from "@app/api-services/httpService";
 import { Carousel } from "antd";
-const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
+import { API_END_POINT } from "@app/api-services/httpConstant";
+
+const merchantUrl = `${API_END_POINT}/merchant-info`;
 // const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
 // export const appcube_base_url = "https://196.188.120.4:32000";
-export const appcube_base_url =
-  "https://telebirrminiappmanagement.ethiotelecom.et:32000";
+const appcube_base_url =
+  `https://telebirrminiappmanagement.ethiotelecom.et:32000`;
 // const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
 
 // authCheckState();
@@ -41,10 +43,8 @@ const tabs = [
 
 const Product = () => {
   // authCheckState();
-  // const session = userSession();
   const router = useRouter();
   const [currentTab, setCurrentTab] = useState(1);
-  // if (session === null) return router.replace("guest/login");
   const [currentMiniAppStep, setCurrentMiniAppStep] = useState(1);
   const [currentPaymentStep, setCurrentPaymentStep] = useState(1);
   const [incompletePopup, setIncompletePopup] = useState(false);
@@ -57,7 +57,7 @@ const Product = () => {
   const [userId, setUserId] = useState();
   const [user, setUser] = useState(null);
 
-  const base_url = "https://developer.ethiotelecom.et/v2";
+  const base_url = `${API_END_POINT}`;
 
   const returnInstanceUrl = () => {
     const instanceUrl =
@@ -83,30 +83,6 @@ const Product = () => {
     }
   };
 
-  const checkCurentMerchantStatus = async (user_id) => {
-    try {
-      const response = await checkUserStatus(user_id);
-      const status = response.data.status;
-
-      const { data } = await http.get(`${base_url}/user/${user_id}`);
-      console.log({ data, status });
-      if (data && data.status === "active") {
-        setCompleteStatus("pending");
-        setTeamUserInfo({
-          status: "active",
-          tenantId: data.appcube_tenant_Id,
-          instanceUrl: data.instanceUrl,
-        });
-        return;
-      }
-
-      setCompleteStatus(status);
-      console.log("complete status " + status);
-    } catch (ex) {
-      console.error(`Error:`, ex);
-    }
-  };
-
   const MiniAppSteps = [
     {
       id: 1,
@@ -127,25 +103,6 @@ const Product = () => {
         },
       },
     },
-    // {
-    //   id: 2,
-    //   name: "Develop Mini App on Clouds",
-    //   options: {
-    //     option1: {
-    //       name: "On vsCode",
-    //       href: "https://developer.ethiotelecom.et/docs/category/mini-app-devlopment-guide",
-    //     },
-    //     option2: {
-    //       name: "On Low code platform",
-    //       href: `${
-    //         merchant?.instanceUrl ||
-    //         (teamUserInfo &&
-    //           teamUserInfo.status === "active" &&
-    //           teamUserInfo.instanceUrl)
-    //       }`,
-    //     },
-    //   },
-    // },
 
     {
       id: 3,
@@ -215,36 +172,65 @@ const Product = () => {
     setCurrentPaymentStep(id);
   };
 
+  const checkCurrentMerchantStatus = async (user_id) => {
+    try {
+      const [userStatusResponse, userDataResponse] = await Promise.all([
+        checkUserStatus(user_id),
+        http.get(`${base_url}/user/${user_id}`),
+      ]);
+
+      const userStatus = userStatusResponse.data.status;
+      const userData = userDataResponse.data;
+
+      const status = userData.userId ? userData.status : userStatus;
+
+      if (
+        (userData.userId && status === "active") ||
+        (userData.userId && status === "approved")
+      ) {
+        setCompleteStatus("completed");
+        setTeamUserInfo({
+          status: "active",
+          tenantId: userData.appcube_tenant_Id,
+          instanceUrl: userData.instanceUrl,
+        });
+      } else {
+        setCompleteStatus(status);
+      }
+
+      console.log({ userData, status, user_id });
+    } catch (ex) {
+      console.error(`Error:`, ex);
+    }
+  };
+
   const atStartUp = async () => {
     try {
       const userInfo = getUserData();
-      const user_id = userInfo?.id;
-      console.log({ userInfo, email: userInfo?.emai, user_id });
-      if (!user_id) return router.push("/guest/login");
+      let user_id;
+
+      if (userInfo.role === "admin" || userInfo.role === "Admin") {
+        user_id = userInfo.id;
+      } else if (userInfo.role === "Developer") {
+        user_id = userInfo.userId;
+      }
+
+      if (!user_id) {
+        return router.push("/guest/login");
+      }
+
       setIsModalVisible(true);
       setUser(userInfo);
       setUserId(user_id);
 
-      const headers = {
-        Authorization: "Bearer " + Cookies.get("token"),
-        "Content-Type": "application/json",
-      };
-
       const response = await http.get(
-        `${merchantUrl}/check-status?id=${user_id}`,
-        {
-          headers,
-        }
+        `${merchantUrl}/check-status?id=${user_id}`
       );
-
       const merchantData = response.data;
-      setMerchant(merchantData);
 
-      // checkMerchantStatus(user_id);
-      console.log({ merchantData });
+      setMerchant(merchantData);
     } catch (error) {
-      throw new Error(error);
-      // console.error("Something went wrong", error);
+      console.error("An error occurred during startup:", error);
     }
   };
 
@@ -255,7 +241,7 @@ const Product = () => {
   useEffect(() => {
     const userInfo = getUserData();
     if (userInfo?.id) {
-      checkCurentMerchantStatus(userInfo.id);
+      checkCurrentMerchantStatus(userInfo.id);
     }
   }, [userId, completeStatus]);
 
@@ -289,13 +275,11 @@ const Product = () => {
   }
 
   const handleRouting = () => {
-    console.log({ completeStatus });
     if (completeStatus === "pending" || completeStatus === "completed") {
       setIncompletePopup(false);
       redirectSSOToManagementConsole();
     } else if (typeof completeStatus === "undefined") {
       setIncompletePopup(true);
-      // redirectSSOToManagementConsole();
     }
   };
 

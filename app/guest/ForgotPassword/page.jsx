@@ -3,6 +3,7 @@ import http from "@app/api-services/httpService";
 import { useState } from "react";
 import { message } from "antd";
 import Link from "next/link";
+import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ const ForgotPassword = () => {
       }
 
       const response = await http.post(
-        "https://developer.ethiotelecom.et/v2/user/forgot-password",
+        `${API_END_POINT}/user/forgot-password`,
         {
           email,
         }

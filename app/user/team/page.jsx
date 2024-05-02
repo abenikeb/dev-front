@@ -11,8 +11,6 @@ import {
   message,
   Form,
   Tag,
-  Tabs,
-  Radio,
 } from "antd";
 
 import {
@@ -21,28 +19,22 @@ import {
   DeleteOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import {
-  checkUserStatus,
-  sendEmailVerification,
-} from "../../api-services/userService";
+import { checkUserStatus } from "../../api-services/userService";
 import { useState, useEffect, use } from "react";
 import moment from "moment";
 import http from "@app/api-services/httpService";
-import { validateForm } from "./validation";
 import { getUserData } from "@app/api-services/authService";
 import RegisterModal from "@components/RegisterModal";
 import JoinTeamModal from "./JoinTeamModal";
 import UserDetailsModal from "./UserDetailsModal";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
+import { API_END_POINT } from "@app/api-services/httpConstant";
 
-import axios from "axios";
 const { confirm } = Modal;
-const { TabPane } = Tabs;
 
-const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
-
-const base_url = "https://developer.ethiotelecom.et/v2";
+const merchantUrl = `${API_END_POINT}/merchant-info`;
+const base_url = `${API_END_POINT}`;
 
 const { Option } = Select;
 
@@ -58,33 +50,20 @@ const Teams = () => {
   const [incompletePopup, setIncompletePopup] = useState(false);
   const [modalPopup, setModalPopup] = useState(false);
   const [completeStatus, setCompleteStatus] = useState();
-
   const [userData, setUserData] = useState([]);
   const [pendUserData, setPendUserData] = useState(null);
   const [user, setUser] = useState(null);
   const [statusLoading, setStatusLoading] = useState(true);
-
   const [firstName, setFirstName] = useState("1");
   const [lastName, setLastName] = useState("");
-
-  const [roleId, setRoleId] = useState("1");
   const [email, setEmail] = useState("");
-  const [accountTenantId, setAccountTenantId] = useState("1");
   const [instanceId, setInstanceId] = useState("1");
   const [userId, setUserId] = useState("");
-  const [password, setPassword] = useState("");
-  const [languageLocaleKey, setLanguageLocaleKey] = useState("1");
-
   const [loading, setLoading] = useState(true);
-
   const [isSending, setIsSending] = useState(false);
   const [countdown, setCountdown] = useState(0); // 1 minutes in seconds
-
-  const [error, setError] = useState(null);
   const [errors, setErrors] = useState({});
-  const [emailVerificationError, setEmailVerificationError] = useState(null);
   const [joinTeamModalVisible, setJoinTeamModalVisible] = useState(false);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [merchantDataSource, setMerchantDataSource] = useState([]);
@@ -96,8 +75,13 @@ const Teams = () => {
       let userSession = getUserData();
       const userDataResponse = await http.get(`${base_url}/user`);
 
+      const queryParams = new URLSearchParams({
+        id: userSession.id,
+        role: userSession.role,
+      });
+
       const response = await http.get(
-        `${merchantUrl}/by-team-user/${userSession.id}`
+        `${merchantUrl}/by-team-user?${queryParams}`
       );
       const data = await response.data;
 
@@ -189,7 +173,7 @@ const Teams = () => {
         setAuthorizetoAccessTeamInfo(true);
       } else if (status === "undefined") {
         setAuthorizetoAccessTeamInfo(false);
-      } else if (status === "completed") {
+      } else if (status === "completed" || status === "completed") {
         setAuthorizetoAccessTeamInfo(true);
       } else {
         setAuthorizetoAccessTeamInfo(false);
@@ -208,7 +192,7 @@ const Teams = () => {
       let userSession = getUserData();
       console.log({ userSession });
       const response = await http.get(
-        `https://developer.ethiotelecom.et/v2/user/${userSession.id}`
+        `${API_END_POINT}/user/${userSession.id}`
       );
       const userStatus = response.data?.status;
 
@@ -307,13 +291,10 @@ const Teams = () => {
         return user;
       });
       setUserData(updatedUserData);
-      await http.put(
-        `https://developer.ethiotelecom.et/v2/user/update-user-status`,
-        {
-          userId: record.unique_id,
-          status: selectedStatus,
-        }
-      );
+      await http.put(`${API_END_POINT}/user/update-user-status`, {
+        userId: record.unique_id,
+        status: selectedStatus,
+      });
     } catch (error) {}
   };
 
@@ -482,45 +463,6 @@ const Teams = () => {
     }
   };
 
-  const startCountdown = () => {
-    setCountdown(60); // Reset the countdown
-  };
-
-  const handleValidationErrors = (error) => {
-    const newErrors = {};
-    error.details.forEach((detail) => {
-      newErrors[detail.context.key] = detail.message;
-    });
-    setErrors(newErrors);
-    // setIsSubmitting(false);
-  };
-
-  const handleSendVerificationCode = async (event) => {
-    event.preventDefault();
-    let userData = {
-      email,
-    };
-    const { error } = validateForm(userData);
-
-    if (!isSending && countdown === 0) {
-      console.log(userData);
-      if (error) {
-        console.log(error);
-        handleValidationErrors(error);
-        return;
-      } else {
-        setEmailVerificationError(null);
-        // Call your backend service to send email verification
-        setIsSending(true);
-        console.log("first");
-        const response = await sendEmailVerification(userData.email);
-
-        setIsSending(false);
-        startCountdown();
-      }
-    }
-  };
-
   const handleCreateTeam = async () => {
     try {
       if (completeStatus === "pending") {
@@ -566,7 +508,7 @@ const Teams = () => {
 
   const handleJoinTeam = (searchTerm) => {
     console.log(`Joining team with searchTerm: ${searchTerm}`);
-    setJoinTeamModalVisible(false); // Close the modal
+    setJoinTeamModalVisible(false);
   };
 
   const handleOpenJoinTeam = () => {
@@ -575,10 +517,6 @@ const Teams = () => {
 
   const handleCancelJoinTeamModal = () => {
     setJoinTeamModalVisible(false);
-  };
-
-  const handleEdit = (record) => {
-    console.log({ record });
   };
 
   const handleView = (record) => {
@@ -592,17 +530,24 @@ const Teams = () => {
     setSelectedRecord(null);
   };
 
-  const [dataSource, setDataSource] = useState([]);
+  const [colSource, setColSource] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
 
   useEffect(() => {
     const fetchTeamsData = async () => {
       try {
+        const userData = getUserData();
+        const queryParams = new URLSearchParams({
+          id: userData.id,
+          role: userData.role,
+        });
+
         const response = await http.get(
-          `${merchantUrl}/by-team-user/${getUserData().id}`
+          `${merchantUrl}/by-team-user?${queryParams}`
         );
+
         const data = await response.data;
-        console.log({ data });
+        console.log({ data, response });
         if (data) {
           setMerchantDataSource(data);
           let formattedData;
@@ -634,7 +579,7 @@ const Teams = () => {
             ];
           }
 
-          setDataSource(formattedData);
+          setColSource(formattedData);
           setSelectedTeam(formattedData[0]);
         }
       } catch (error) {
@@ -680,8 +625,6 @@ const Teams = () => {
     ...teamListColumn,
   ];
 
-  // alert(userPermissionRole);
-
   return (
     <div>
       {(isAuthorizedToAccessTeamInfo || isAuthorizedToAccessTeaInfo) && (
@@ -706,7 +649,7 @@ const Teams = () => {
                 selectedRowKeys: selectedTeam ? [selectedTeam.key] : [],
               }}
               columns={columnsWithRowNumber}
-              dataSource={dataSource}
+              dataSource={colSource}
               pagination={false}
               bordered
               showHeader
@@ -902,12 +845,7 @@ const Teams = () => {
           </Form.Item>
           <div className="w-full flex justify-end">
             <span></span>
-            {/* <button
-              type="submit"
-              className="btn btn-sm bg-lime-500 text-white hover:bg-lime-600"
-            >
-              Add Member
-            </button> */}
+
             <Button
               type="default"
               htmlType="submit"

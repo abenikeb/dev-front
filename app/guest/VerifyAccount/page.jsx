@@ -16,6 +16,7 @@ import React from "react";
 import axios from "axios";
 import http from "@app/api-services/httpService";
 import { Button } from "antd";
+import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const Verify = () => {
   const router = useRouter();
@@ -41,10 +42,10 @@ const Verify = () => {
   const handleVerify = async (e) => {
     try {
       e.preventDefault();
-      const response = await http.post(
-        "https://developer.ethiotelecom.et/v2/user/verify",
-        { email, otp }
-      );
+      const response = await http.post(`${API_END_POINT}/user/verify`, {
+        email,
+        otp,
+      });
       if (response.data) {
         setVerificationMessage("Verification successful!");
         router.push("/guest/login");

@@ -21,7 +21,7 @@ import {
   FaPhone,
   FaMapMarker,
 } from "react-icons/fa";
-import withErrorHandler from "@hoc/withErrorHandler/withErrorHandler";
+// import withErrorHandler from "@hoc/withErrorHandler/withErrorHandler";
 
 const Footer = () => (
   <footer className="footer-container flex flex-col w-full">
@@ -218,4 +218,4 @@ const Home = () => {
   );
 };
 
-export default withErrorHandler(Home);
+export default Home;
