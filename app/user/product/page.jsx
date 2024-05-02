@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import { redirect, useRouter } from "next/navigation";
 import { MiniLoading } from "@components/UI/miniLoading";
 import userSession from "@lib/hooks/userSession";
-// import { authCheckState } from "@app/api-services/authService";
 import { getUserData } from "../../api-services/authService";
 import { checkUserStatus, getappCubeUser } from "@app/api-services/userService";
 import CardWithButton from "@components/CardWithButton";
@@ -22,13 +21,10 @@ import { Carousel } from "antd";
 import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const merchantUrl = `${API_END_POINT}/merchant-info`;
-// const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
 // export const appcube_base_url = "https://196.188.120.4:32000";
 const appcube_base_url =
   `https://telebirrminiappmanagement.ethiotelecom.et:32000`;
-// const merchantUrl = "https://developer.ethiotelecom.et/v2/merchant-info";
 
-// authCheckState();
 
 const tabs = [
   {
