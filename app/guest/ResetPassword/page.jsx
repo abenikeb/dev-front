@@ -63,10 +63,6 @@ const PasswordResetPage = () => {
         return;
       }
 
-      //console.log({
-        token__s: token,
-      });
-
       const response = await axios.post(
         `${API_END_POINT}/user/reset-password`,
         {

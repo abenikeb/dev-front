@@ -280,8 +280,6 @@ const Product = () => {
   const handleAppCubeRoute = (path) => {
     const token = Cookies.get("token");
 
-    //console.log({ token, path });
-
     if (!token || token === "") {
       router.push("/guest/login");
     } else {
@@ -468,6 +466,7 @@ const Product = () => {
                       Download Node.js Demo
                     </a>
                   </div>
+
                   <div className="flex space-x-3  pt-4 pb-4">
                     <img src="/assets/icons/download.svg" className="h-5 w-5" />
                     <a
@@ -475,6 +474,33 @@ const Product = () => {
                       href="https://developer.ethiotelecom.et/developer_tools/static/download/ET_PHP_DEMO.zip"
                     >
                       Download PHP Demo
+                    </a>
+                  </div>
+                  <div className="flex space-x-3  pt-4 pb-4">
+                    <img src="/assets/icons/download.svg" className="h-5 w-5" />
+                    <a
+                      className="link link-success"
+                      href="https://developer.ethiotelecom.et/developer_tools/static/download/B2B_WebCheckoutDemo.zip"
+                    >
+                      B2B_WebCheckoutDemo
+                    </a>
+                  </div>
+                  <div className="flex space-x-3  pt-4 pb-4">
+                    <img src="/assets/icons/download.svg" className="h-5 w-5" />
+                    <a
+                      className="link link-success"
+                      href="https://developer.ethiotelecom.et/developer_tools/static/download/C2B_WebCheckoutDemo.zip"
+                    >
+                      C2B_WebCheckoutDemo
+                    </a>
+                  </div>
+                  <div className="flex space-x-3  pt-4 pb-4">
+                    <img src="/assets/icons/download.svg" className="h-5 w-5" />
+                    <a
+                      className="link link-success"
+                      href="https://developer.ethiotelecom.et/developer_tools/static/download/autoLoginDemo.zip"
+                    >
+                      Auto Login Demo for MiniApp
                     </a>
                   </div>
                 </div>
