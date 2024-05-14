@@ -4,10 +4,11 @@ import * as _env from "./../app/api-services/httpConstant";
 
 const serviceUtility = (name, credentials, token, envVariables) => {
   let cofigData = null;
-  let apiEndPoint = "https://developerportal.ethiotelebirr.et:38443/apiaccess/payment/gateway/payment/v1";
+  let apiEndPoint =
+    "https://developerportal.ethiotelebirr.et:38443/apiaccess/payment/gateway/payment/v1";
 
   if (name === "ApplyFabricToken") {
-    console.log({ name, token, credentials, envVariables });
+    //console.log({ name, token, credentials, envVariables });
     cofigData = {
       name,
       // url: `${apiEndPoint}/token`,
@@ -21,8 +22,8 @@ const serviceUtility = (name, credentials, token, envVariables) => {
       },
     };
   } else if (name === "CreateOrder") {
-    // console.log({ name, envVariables, credentials, token})
-    let datax={
+    // //console.log({ name, envVariables, credentials, token})
+    let datax = {
       nonce_str: "fcab0d2949e64a69a212aa83eab6ee1d",
       biz_content: {
         trans_currency: "ETB",
@@ -43,7 +44,7 @@ const serviceUtility = (name, credentials, token, envVariables) => {
       version: "1.0",
       sign_type: "SHA256WithRSA",
       timestamp: "1535166225",
-    }
+    };
     cofigData = {
       name,
       url: `/merchant/preOrder`,

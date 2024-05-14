@@ -2217,7 +2217,7 @@ exports.createOrder = async (req, res) => {
   );
   let prepayId = createOrderResult.biz_content.prepay_id;
   let rawRequest = createRawRequest(prepayId);
-  // console.log("Assembled URL");
+  // //console.log("Assembled URL");
   res.send(config.webBaseUrl + rawRequest + "&version=1.0&trade_type=Checkout");
 };
 
@@ -2270,7 +2270,7 @@ function createRequestObject(title, amount) {
   req.biz_content = biz;
   req.sign = tools.signRequestObject(req);
   req.sign_type = "SHA256WithRSA";
-  console.log(req);
+  //console.log(req);
   return req;
 }
 
@@ -2725,7 +2725,7 @@ exports.createOrder = async (req, res) => {
   );
   let prepayId = createOrderResult.biz_content.prepay_id;
   let rawRequest = createRawRequest(prepayId);
-  // console.log("Assembled URL");
+  // //console.log("Assembled URL");
   res.send(config.webBaseUrl + rawRequest + "&version=1.0&trade_type=Checkout");
 };
 
@@ -2778,7 +2778,7 @@ function createRequestObject(title, amount) {
   req.biz_content = biz;
   req.sign = tools.signRequestObject(req);
   req.sign_type = "SHA256WithRSA";
-  console.log(req);
+  //console.log(req);
   return req;
 }
 
@@ -3215,7 +3215,7 @@ exports.createOrder = async (req, res) => {
   let prepayId = createOrderResult.biz_content.prepay_id;
   let rawRequest = createRawRequest(prepayId);
 
-  console.log(
+  //console.log(
     config.webBaseUrl +
       rawRequest +
       "&version=1.0&trade_type=WebCheckout&use_notice_key=false&language=en"
@@ -3276,7 +3276,7 @@ function createRequestObject(title, amount) {
   req.biz_content = biz;
   req.sign = tools.signRequestObject(req);
   req.sign_type = "SHA256WithRSA";
-  console.log(req);
+  //console.log(req);
   return req;
 }
 
@@ -3629,7 +3629,7 @@ exports.createOrder = async (req, res) => {
   let prepayId = createOrderResult.biz_content.prepay_id;
   let rawRequest = createRawRequest(prepayId);
 
-  console.log(
+  //console.log(
     config.webBaseUrl +
       rawRequest +
       "&version=1.0&trade_type=WebCheckout&use_notice_key=false&language=en"
@@ -3690,7 +3690,7 @@ function createRequestObject(title, amount) {
   req.biz_content = biz;
   req.sign = tools.signRequestObject(req);
   req.sign_type = "SHA256WithRSA";
-  console.log(req);
+  //console.log(req);
   return req;
 }
 
@@ -3871,7 +3871,7 @@ function applyFabricToken() {
         appSecret: config.appSecret,
       }),
     };
-    console.log(options);
+    //console.log(options);
     request(options, function (error, response) {
       if (error) throw new Error(error);
       let result = JSON.parse(response.body);
@@ -4544,7 +4544,7 @@ function applyFabricToken() {
         appSecret: config.appSecret,
       }),
     };
-    console.log(options);
+    //console.log(options);
     request(options, function (error, response) {
       if (error) throw new Error(error);
       let result = JSON.parse(response.body);
@@ -5609,12 +5609,12 @@ export function getCodeSnippetByPayment(name, paymentMethod, codeId) {
   });
 
   const logs = updateDode?.value.filter((f) => f.name === name);
-  console.log({ newCode });
+  //console.log({ newCode });
   return logs[0]?.value;
 }
 
 export async function saveCodeResponse({ data, name, headers, url }) {
-  // console.log({ data, name, headers, url });
+  // //console.log({ data, name, headers, url });
   // const {data:respnse} = await axios({
   //   method: 'post',
   //   headers,

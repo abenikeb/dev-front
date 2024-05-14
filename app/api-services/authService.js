@@ -36,7 +36,7 @@ export async function login(email, password, captchaCode) {
 }
 
 export function loginWithJwt(jwt) {
-  console.log("JWT", jwt);
+  //console.log("JWT", jwt);
   const expirationDates = new Date(new Date().getTime() + expiresIn * 1000);
   const user = jwtDecode(jwt);
 
@@ -78,7 +78,7 @@ export const authCheckState = () => {
   if (!token_) {
     return logout();
   } else {
-    console.log("TOKEN EXPIRATION ENDUP");
+    //console.log("TOKEN EXPIRATION ENDUP");
     // const expDate = new Date(Cookies.get(expirationDate));
     // if (expDate < new Date()) {
     //   return logout();

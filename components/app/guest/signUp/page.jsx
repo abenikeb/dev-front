@@ -3,15 +3,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { register } from "../../api-services/userService";
 import { loginWithJwt } from "../../api-services/authService";
 import withErrorHandler from "@hoc/withErrorHandler/withErrorHandler";
 import { MiniLoading } from "@components/UI/miniLoading";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { toast } from 'react-toastify';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import Joi from "joi-browser";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,9 +49,9 @@ const Sign_Up = () => {
   };
 
   const handleInputChange = ({ currentTarget: input }) => {
-    setUserData({ ...userData, [input.name]: input.value })
+    setUserData({ ...userData, [input.name]: input.value });
     setError(null);
-  }
+  };
 
   const createUser = async (e) => {
     e.preventDefault();
@@ -101,18 +101,18 @@ const Sign_Up = () => {
 
       if (response.status === 201) {
         loginWithJwt(response.headers["authorization"]);
-        toast.success("User Registered Successfuly")
+        toast.success("User Registered Successfuly");
         setTimeout(() => {
           router.push("/user/home");
 
           // Cookies.get(user)
           setIsSubmitting(false);
           setErrors(null);
-        }, 2000)
+        }, 2000);
       }
     } catch (ex) {
       if (ex.response.status === 400) {
-        console.log("EX", ex);
+        //console.log("EX", ex);
         setError(ex?.response?.data);
         setIsSubmitting(false);
       } else {
@@ -158,7 +158,11 @@ const Sign_Up = () => {
 
       <section className="md:flex w-full">
         <div className="hidden sm:flex w-full md:w-1/2 bg-lime-500 flex-center">
-          <img src="/assets/images/signup-cover.jpg" alt="signup-cover" className="w-[500px] h-[500px]" />
+          <img
+            src="/assets/images/signup-cover.jpg"
+            alt="signup-cover"
+            className="w-[500px] h-[500px]"
+          />
           {/* <Image
             src="/assets/images/signup-cover.jpg"
             width={500}
@@ -181,7 +185,6 @@ const Sign_Up = () => {
             onReCAPTCHAChange={onReCAPTCHAChange}
           />
         </div>
-
       </section>
       <MiniLoading isLoading={submitting} />
       <ToastContainer />

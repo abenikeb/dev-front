@@ -49,7 +49,7 @@ const Login = () => {
           userData.password,
           captchaCode
         );
-        console.log("RES", response.status);
+        //console.log("RES", response.status);
         if (response === "OK") {
           router.replace("/user/home");
           setTimeout(() => {
@@ -64,7 +64,7 @@ const Login = () => {
           setLoading(false);
         }
       } catch (err) {
-        console.log("ERROR", err);
+        //console.log("ERROR", err);
         setLoading(false);
       } finally {
         setIsSubmitting(false);

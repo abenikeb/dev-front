@@ -4,7 +4,7 @@ const Modal = (props) => {
     props.tshowPopup && document.getElementById("my_modal_4").showModal();
   }, []);
   const closeModal = () => {
-    // console.log("closeMOdal triggered");
+    // //console.log("closeMOdal triggered");
     props.onCloseModel();
   };
 

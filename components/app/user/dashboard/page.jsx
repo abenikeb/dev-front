@@ -73,14 +73,14 @@ const Dashboard = ({ post }) => {
       if (userInfo !== null) {
         setIsUserLogin(true);
         const { data } = await getCredential(userInfo?.id);
-        console.log("user data", data);
+        //console.log("user data", data);
         setCredentials(data);
       } else {
         setIsUserLogin(false);
         router.push("/");
       }
     } catch (ex) {
-      console.log("ERROR", ex);
+      //console.log("ERROR", ex);
     }
   }
 
@@ -423,16 +423,19 @@ const Dashboard = ({ post }) => {
 
             {/* Full project Download */}
             <div className="flex flex-row gap-x-3 mb-5 mt-20 self-end">
-             <Link href={`https://developer.ethiotelecom.et/developer_tools/static/download/ET_DEMO_${plValue}.zip`}>
+              <Link
+                href={`https://developer.ethiotelecom.et/developer_tools/static/download/ET_DEMO_${plValue}.zip`}
+              >
                 <button className="btn">Get Full Project</button>
               </Link>
-              <Link href={`https://developer.ethiotelecom.et/developer_tools/static/download/Postman_Collection_&_Envirnoment.zip`}>
+              <Link
+                href={`https://developer.ethiotelecom.et/developer_tools/static/download/Postman_Collection_&_Envirnoment.zip`}
+              >
                 <button className="btn bg-lime-500 text-white">
                   Postman collection
                 </button>
               </Link>
             </div>
-
           </div>
           {/* CODE BODY END */}
         </div>

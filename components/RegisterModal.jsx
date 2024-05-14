@@ -31,7 +31,7 @@ const RegisterModal = (props) => {
   });
 
   const closeModal = () => {
-    console.log("closeModal triggered");
+    //console.log("closeModal triggered");
     props.onCloseModal();
   };
 

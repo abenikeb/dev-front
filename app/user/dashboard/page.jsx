@@ -79,14 +79,14 @@ const Dashboard = ({ post }) => {
       if (userInfo !== null) {
         setIsUserLogin(true);
         const { data } = await getCredential(user_id);
-        console.log("user data", data);
+        //console.log("user data", data);
         setCredentials(data);
       } else {
         setIsUserLogin(false);
         return router.push("/guest/login");
       }
     } catch (ex) {
-      console.log("ERROR", ex);
+      //console.log("ERROR", ex);
     }
   }
 
@@ -99,10 +99,10 @@ const Dashboard = ({ post }) => {
   }, [codeSnippets]);
 
   const handleCopy = (key_) => {
-    console.log({
-      key_,
-      credentials: credentials[key_],
-    });
+    //console.log({
+    //   key_,
+    //   credentials: credentials[key_],
+    // });
     setCopied({ ...copied, [key_]: true });
     navigator.clipboard.writeText(credentials[key_]);
     setTimeout(() => setCopied({ ...copied, [key_]: false }), 3000);

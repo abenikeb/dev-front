@@ -14,7 +14,6 @@ export const getForum = async (id) => {
 };
 
 export const saveFroum = (forum) => {
-  console.log("forum", forum);
   if (forum.id) {
     let { id, ...newForum } = forum;
     return http.patch(`${urlEndpoints}/forumPost/${id}`, newForum);

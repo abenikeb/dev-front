@@ -17,6 +17,7 @@ import axios from "axios";
 import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const Profile = () => {
+  const router = useRouter();
   const [isUserLogin, setIsUserLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
@@ -35,20 +36,11 @@ const Profile = () => {
   const [passMessage, setpassMessage] = useState("");
   const [profileImage, setProfileImage] = useState(user?.profileImage);
 
-  const router = useRouter();
-
-  let schema = {
-    firstName: Joi.string().min(3).max(50).required().label("First Name"),
-    lastName: Joi.string().min(3).max(50).required().label("Last Name"),
-    tel: Joi.number().required().label("Phone Number"),
-    email: Joi.string().required(),
-  };
-
   useEffect(() => {
     const user = getUserData();
-    console.log({
-      user,
-    });
+    if (!user) {
+      return router.push("/guest/login");
+    }
     setUser(user);
     if (user !== null) {
       setIsUserLogin(true);
@@ -95,7 +87,7 @@ const Profile = () => {
       setLoading(false);
       return;
     } catch (error) {
-      console.log(error);
+      //console.log(error);
       setLoading(false);
     } finally {
       setTimeout(() => {
@@ -137,9 +129,9 @@ const Profile = () => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      console.log({
-        file,
-      });
+      //console.log({
+      //   file,
+      // });
 
       const response = await axios.post(
         `${API_END_POINT}/user/upload/${user.id}`,
@@ -155,7 +147,7 @@ const Profile = () => {
 
       setProfileImage(updatedProfileImage);
 
-      console.log("File uploaded successfully:", response.data);
+      //console.log("File uploaded successfully:", response.data);
     } catch (error) {
       console.error("Error uploading file:", error);
     }

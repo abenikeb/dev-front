@@ -22,9 +22,7 @@ import { API_END_POINT } from "@app/api-services/httpConstant";
 
 const merchantUrl = `${API_END_POINT}/merchant-info`;
 // export const appcube_base_url = "https://196.188.120.4:32000";
-const appcube_base_url =
-  `https://telebirrminiappmanagement.ethiotelecom.et:32000`;
-
+const appcube_base_url = `https://telebirrminiappmanagement.ethiotelecom.et:32000`;
 
 const tabs = [
   {
@@ -159,12 +157,12 @@ const Product = () => {
   };
 
   const handleMiniAppStepClick = (id) => {
-    console.log(id);
+    //console.log(id);
     setCurrentMiniAppStep(id);
   };
 
   const handlePaymentStepClick = (id) => {
-    console.log(id);
+    //console.log(id);
     setCurrentPaymentStep(id);
   };
 
@@ -194,7 +192,7 @@ const Product = () => {
         setCompleteStatus(status);
       }
 
-      console.log({ userData, status, user_id });
+      //console.log({ userData, status, user_id });
     } catch (ex) {
       console.error(`Error:`, ex);
     }
@@ -205,14 +203,14 @@ const Product = () => {
       const userInfo = getUserData();
       let user_id;
 
+      if (!userInfo) {
+        return router.push("/guest/login");
+      }
+
       if (userInfo.role === "admin" || userInfo.role === "Admin") {
         user_id = userInfo.id;
       } else if (userInfo.role === "Developer") {
         user_id = userInfo.userId;
-      }
-
-      if (!user_id) {
-        return router.push("/guest/login");
       }
 
       setIsModalVisible(true);
@@ -282,7 +280,7 @@ const Product = () => {
   const handleAppCubeRoute = (path) => {
     const token = Cookies.get("token");
 
-    console.log({ token, path });
+    //console.log({ token, path });
 
     if (!token || token === "") {
       router.push("/guest/login");
@@ -308,7 +306,7 @@ const Product = () => {
   };
 
   const handleJoinTeam = (searchTerm) => {
-    console.log(`Joining team with searchTerm: ${searchTerm}`);
+    //console.log(`Joining team with searchTerm: ${searchTerm}`);
     setJoinTeamModalVisible(false);
   };
 

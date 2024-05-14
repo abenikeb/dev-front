@@ -85,7 +85,7 @@ const Teams = () => {
       );
       const data = await response.data;
 
-      console.log({ reponseData: data[merchIndex] });
+      //console.log({ reponseData: data[merchIndex] });
 
       if (data && Array.isArray(data)) {
         setMerchantDataSource(data);
@@ -93,9 +93,9 @@ const Teams = () => {
 
         const userDataArray = userDataResponse.data;
         const merchantDataArray = merchantDataResponse?.teamUsers || [];
-        console.log({
-          merchantDataArray,
-        });
+        //console.log({
+        //   merchantDataArray,
+        // });
 
         setUserPermissionRole(() => {
           const foundUser = merchantDataResponse?.teamUsers.find(
@@ -155,7 +155,7 @@ const Teams = () => {
       const { data: rolesData } = await http.get(url);
 
       setRoles(rolesData);
-      console.log({ rolesData });
+      //console.log({ rolesData });
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
@@ -190,7 +190,7 @@ const Teams = () => {
   const fetchUserStatus = async () => {
     try {
       let userSession = getUserData();
-      console.log({ userSession });
+      //console.log({ userSession });
       const response = await http.get(
         `${API_END_POINT}/user/${userSession.id}`
       );
@@ -198,7 +198,7 @@ const Teams = () => {
 
       setPendUserData(response.data);
 
-      console.log({ userStatus });
+      //console.log({ userStatus });
       setIsAuthorizedToAccessTeamInfo(userStatus === "active");
       setAuthorizetoAccessTeamInfo(userStatus === "active");
     } catch (error) {
@@ -257,10 +257,10 @@ const Teams = () => {
         const userData = orginalState.filter(
           (m) => m.unique_id !== record.unique_id
         );
-        console.log({
-          userData,
-          orginalState,
-        });
+        //console.log({
+        //   userData,
+        //   orginalState,
+        // });
         setUserData(userData);
         setIsModalOpen(false);
       } else {
@@ -482,12 +482,12 @@ const Teams = () => {
       }
 
       setCompleteStatus(status);
-      console.log("complete status " + status);
+      //console.log("complete status " + status);
     } catch (ex) {
       if (ex.response?.status === 400) {
-        console.log("EX", ex);
+        //console.log("EX", ex);
       } else {
-        console.log("something went wrong", ex);
+        //console.log("something went wrong", ex);
       }
     }
   };
@@ -507,7 +507,7 @@ const Teams = () => {
   };
 
   const handleJoinTeam = (searchTerm) => {
-    console.log(`Joining team with searchTerm: ${searchTerm}`);
+    //console.log(`Joining team with searchTerm: ${searchTerm}`);
     setJoinTeamModalVisible(false);
   };
 
@@ -520,7 +520,7 @@ const Teams = () => {
   };
 
   const handleView = (record) => {
-    console.log({ record });
+    //console.log({ record });
     setSelectedRecord(record);
     setModalVisible(true);
   };
@@ -547,7 +547,7 @@ const Teams = () => {
         );
 
         const data = await response.data;
-        console.log({ data, response });
+        //console.log({ data, response });
         if (data) {
           setMerchantDataSource(data);
           let formattedData;
@@ -562,9 +562,9 @@ const Teams = () => {
               short_code: item.short_code,
               fullName: item.fullName,
             }));
-            console.log({
-              xx: formattedData[0],
-            });
+            //console.log({
+            //   xx: formattedData[0],
+            // });
           } else {
             // Case: The response is an object
             formattedData = [
@@ -583,7 +583,7 @@ const Teams = () => {
           setSelectedTeam(formattedData[0]);
         }
       } catch (error) {
-        console.error("Error fetching team data:", error);
+        // console.error("Error fetching team data:", error);
       } finally {
         setLoading(false);
       }

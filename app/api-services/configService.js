@@ -10,7 +10,7 @@ export const getCredential = async (id) => {
 };
 
 export const setCredential = async (id) => {
-  console.log("User Id", id);
+  //console.log("User Id", id);
   return http.post(`${apiEndpoint}/${id}`);
 };
 

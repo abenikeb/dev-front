@@ -37,19 +37,19 @@ const Home = () => {
   const checkMerchantStatus = async (user_id) => {
     try {
       const response = await checkUserStatus(user_id);
-      console.log(response.data.status);
+      //console.log(response.data.status);
       const status = response.data.status;
       setCompleteStatus(status);
       if (status === undefined) {
         setIncompletePopup(true);
       }
 
-      console.log("complete status " + status);
+      //console.log("complete status " + status);
     } catch (ex) {
       if (ex.response?.status === 400) {
-        console.log("EX", ex);
+        //console.log("EX", ex);
       } else {
-        console.log("something went wrong", ex);
+        //console.log("something went wrong", ex);
       }
     } finally {
     }
@@ -59,19 +59,19 @@ const Home = () => {
   // End-New Mod
   // const ssn = session;
   // const user_id = ssn?.user?.id;
-  // console.log(user_id);
+  // //console.log(user_id);
   // const atStartUp = () => {
   //   // // try{
   //   const userInfo = getUserData();
   //   setUser(userInfo);
   //   // const { data } = await getMerchantCredential(userInfo?.id);
   //   const user_id = userInfo?.id;
-  //   console.log("user data", user_id);
+  //   //console.log("user data", user_id);
   //   setUserId(() => user_id);
-  //   console.log("user id before change", userId);
-  //   // console.log("dummy before change ", dummy);
+  //   //console.log("user id before change", userId);
+  //   // //console.log("dummy before change ", dummy);
   //   // setDummy(() => false);
-  //   // console.log("dummy after change: ", dummy);
+  //   // //console.log("dummy after change: ", dummy);
   //   // }
   // };
   // useEffect(() => {
@@ -80,7 +80,7 @@ const Home = () => {
   // useEffect(() => {
   //   if (userId) {
   //     checkMerchantStatus(userId);
-  //     console.log("userId after change 2nd useEffect:", userId);
+  //     //console.log("userId after change 2nd useEffect:", userId);
   //   }
   // }, [userId]);
   function atStartUp() {
@@ -106,7 +106,7 @@ const Home = () => {
     setTimeout(() => {
       setLoading(false);
     }, 1000);
-    // console.log(user_id);
+    // //console.log(user_id);
     // if (completeStatus === "completed") {
     //   setIncompletePopup(false);
     //   setModalPopup(false);
@@ -127,7 +127,7 @@ const Home = () => {
   };
   const handleCloseModal = () => {
     setModalPopup(false);
-    // console.log("close initiatied");
+    // //console.log("close initiatied");
   };
   const showSuccessToast = () => {
     toast.success("Company Registered Successfuly. Please wait for Approval.");

@@ -22,7 +22,7 @@ const PasswordResetPage = () => {
 
   // useEffect(() => {
   //   const queryToken = router?.query?.token;
-  //   console.log({router:router.query})
+  //   //console.log({router:router.query})
   //   if (queryToken) {
   //     setToken(queryToken);
   //   }
@@ -31,14 +31,14 @@ const PasswordResetPage = () => {
   useEffect(() => {
     // Extracting query parameters from the pathname
     const pathname = searchParams.get("token");
-    console.log({ pathname });
+    //console.log({ pathname });
     const queryStartIndex = pathname.indexOf("?");
     if (queryStartIndex !== -1) {
       const queryString = pathname.substring(queryStartIndex + 1);
       const queryParams = new URLSearchParams(queryString);
       const queryToken = queryParams.get("token");
 
-      console.log({ queryToken });
+      //console.log({ queryToken });
 
       if (queryToken) {
         setToken(queryToken);
@@ -63,7 +63,7 @@ const PasswordResetPage = () => {
         return;
       }
 
-      console.log({
+      //console.log({
         token__s: token,
       });
 
@@ -167,7 +167,7 @@ const PasswordResetPage = () => {
 //   const tokenQueryParam = new URLSearchParams(query.token);
 //   const token = tokenQueryParam.get("token");
 
-//   console.log({
+//   //console.log({
 //     query,
 //     token: token
 //   });
@@ -178,7 +178,7 @@ const PasswordResetPage = () => {
 // PasswordResetPage.getInitialProps = async ({ query }) => {
 
 //   const { token } = query;
-//    console.log({
+//    //console.log({
 //     query,
 //     token_:token
 //   })

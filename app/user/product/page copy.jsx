@@ -165,12 +165,12 @@ const Product = () => {
   };
 
   const handleMiniAppStepClick = (id) => {
-    console.log(id);
+    //console.log(id);
     setCurrentMiniAppStep(id);
   };
 
   const handlePaymentStepClick = (id) => {
-    console.log(id);
+    //console.log(id);
     setCurrentPaymentStep(id);
   };
 
@@ -183,7 +183,7 @@ const Product = () => {
       if (data.userId) {
         status = data.status;
       }
-      console.log({ data, status, user_id });
+      //console.log({ data, status, user_id });
       if (data && status === "active") {
         setCompleteStatus("pending");
         setTeamUserInfo({
@@ -195,7 +195,7 @@ const Product = () => {
       }
 
       setCompleteStatus(status);
-      console.log("complete status " + status);
+      //console.log("complete status " + status);
     } catch (ex) {
       console.error(`Error:`, ex);
     }
@@ -205,7 +205,7 @@ const Product = () => {
     try {
       const userInfo = getUserData();
       const user_id = userInfo?.id;
-      console.log({ userInfo, email: userInfo?.emai, user_id });
+      //console.log({ userInfo, email: userInfo?.emai, user_id });
       if (!user_id) return router.push("/guest/login");
       setIsModalVisible(true);
       setUser(userInfo);
@@ -227,7 +227,7 @@ const Product = () => {
       setMerchant(merchantData);
 
       // checkMerchantStatus(user_id);
-      console.log({ merchantData });
+      //console.log({ merchantData });
     } catch (error) {
       throw new Error(error);
       // console.error("Something went wrong", error);
@@ -275,7 +275,7 @@ const Product = () => {
   }
 
   const handleRouting = () => {
-    console.log({ completeStatus });
+    //console.log({ completeStatus });
     if (completeStatus === "pending" || completeStatus === "completed") {
       setIncompletePopup(false);
       redirectSSOToManagementConsole();
@@ -287,7 +287,7 @@ const Product = () => {
   const handleAppCubeRoute = (path) => {
     const token = Cookies.get("token");
 
-    console.log({ token, path });
+    //console.log({ token, path });
 
     if (!token || token === "") {
       router.push("/guest/login");
@@ -313,7 +313,7 @@ const Product = () => {
   };
 
   const handleJoinTeam = (searchTerm) => {
-    console.log(`Joining team with searchTerm: ${searchTerm}`);
+    //console.log(`Joining team with searchTerm: ${searchTerm}`);
     setJoinTeamModalVisible(false);
   };
 

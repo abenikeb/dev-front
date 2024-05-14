@@ -118,19 +118,19 @@ const Product = () => {
       name: "Explore other Payment API",
       href: "https://developer.ethiotelecom.et/docs/GettingStarted",
     },
-  ]
+  ];
 
   const checkMerchantStatus = async (user_id) => {
     try {
       const response = await checkUserStatus(user_id);
       const status = response.data.status;
       setCompleteStatus(status);
-      console.log("complete status " + status);
+      //console.log("complete status " + status);
     } catch (ex) {
       if (ex.response?.status === 400) {
-        console.log("EX", ex);
+        //console.log("EX", ex);
       } else {
-        console.log("something went wrong", ex);
+        //console.log("something went wrong", ex);
       }
     } finally {
     }
@@ -147,17 +147,17 @@ const Product = () => {
   };
 
   // const handleButtonClick = () => {
-  //   console.log("clicked");
+  //   //console.log("clicked");
   //   handleRouting()
   // };
 
   const handleMiniAppStepClick = (id) => {
-    console.log(id);
+    //console.log(id);
     setCurrentMiniAppStep(id);
   };
 
   const handlePaymentStepClick = (id) => {
-    console.log(id);
+    //console.log(id);
     setCurrentPaymentStep(id);
   };
 
@@ -181,10 +181,10 @@ const Product = () => {
   async function useManagementConsole() {
     //* geting the siteId and tenatId from the cookies
     //TODO: It needs to store the credential on the DB
-    console.log({ userId });
+    //console.log({ userId });
     try {
       const { data: userData } = await getappCubeUser(userId);
-      console.log({ userData });
+      //console.log({ userData });
       if (userData) {
         const siteId = userData?.siteId;
         const tenantId = userData?.tenantId;
@@ -237,7 +237,7 @@ const Product = () => {
   };
   const handleCloseModal = () => {
     setModalPopup(false);
-    // console.log("close initiatied");
+    // //console.log("close initiatied");
   };
   return (
     <>

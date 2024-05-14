@@ -66,10 +66,10 @@ const JoinTeamModal = ({ visible, handleCancel }) => {
     } catch (error) {
       if (error.status === 400) {
         message.error("Error sending team join request");
-        console.log("Error sending team join request:", error?.data);
+        //console.log("Error sending team join request:", error?.data);
       } else {
         message.error("Error sending team join request");
-        console.log("Error sending team join request:", error?.response.data);
+        //console.log("Error sending team join request:", error?.response.data);
       }
     } finally {
       setLoading(false);

@@ -25,7 +25,7 @@ const ForgotPassword = () => {
         }
       );
 
-      console.log({ response });
+      //console.log({ response });
       if (response.status === 200) {
         setSuccess(true);
         message.success(

@@ -142,7 +142,7 @@ const CompleteRegistrationForm = ({ userId, closeModal }) => {
   };
 
   const handleFailure = (ex) => {
-    console.log("EXCEPTION", ex);
+    //console.log("EXCEPTION", ex);
 
     if (ex.response?.status === 400) {
       setError(true);
@@ -191,7 +191,7 @@ const CompleteRegistrationForm = ({ userId, closeModal }) => {
 
   const getUserInfoAndSetEmail = () => {
     let user = getUserData();
-    console.log({ user });
+    //console.log({ user });
     setUserData({
       ...userData,
       contactEmail: user?.email,

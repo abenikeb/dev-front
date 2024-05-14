@@ -36,7 +36,7 @@ export async function login(email, password, captchaCode) {
 }
 
 export function loginWithJwt(jwt) {
-  console.log("JWT", jwt);
+  //console.log("JWT", jwt);
   const expirationDates = new Date(new Date().getTime() + expiresIn * 1000);
   const user = jwtDecode(jwt);
 

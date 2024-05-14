@@ -97,25 +97,6 @@ const AnalyticsPage = () => {
     message.success("TenantId copied to clipboard");
   };
 
-  // const processLastWeekData = () => {
-  //   const currentDate = new Date();
-  //   const oneWeekAgo = new Date(
-  //     currentDate.getTime() - 150 * 24 * 60 * 60 * 1000
-  //   );
-
-  //   const lastWeekUserData = userData.filter((item) => {
-  //     const createdAtDate = new Date(item.createdAt);
-  //     return createdAtDate >= oneWeekAgo;
-  //   });
-
-  //   const lastWeekOrganizationData = organizationData.filter((item) => {
-  //     const createdAtDate = new Date(item.createdAt);
-  //     return createdAtDate >= oneWeekAgo;
-  //   });
-
-  //   setLastWeekUserData(lastWeekUserData);
-  //   setLastWeekOrganizationData(lastWeekOrganizationData);
-  // };
   const processLastWeekData = () => {
     const currentDate = new Date();
     const oneWeekAgo = new Date(
@@ -133,9 +114,6 @@ const AnalyticsPage = () => {
     });
 
     const lastWeekUserDataWithCreatedOrg = lastWeekUserData.map((user) => {
-      console.log({
-        createdEmail: user.email,
-      });
       const createdOrg = lastWeekOrganizationData.find(
         (org) => org.contactEmail === user.email
       );
@@ -472,7 +450,7 @@ const AnalyticsPage = () => {
                 />
               )}
               onChange={(pagination, filters, sorter, extra) => {
-                console.log("params", pagination, filters, sorter, extra);
+                //console.log("params", pagination, filters, sorter, extra);
               }}
             />
 
@@ -516,7 +494,7 @@ const AnalyticsPage = () => {
                 />
               )}
               onChange={(pagination, filters, sorter, extra) => {
-                console.log("params", pagination, filters, sorter, extra);
+                //console.log("params", pagination, filters, sorter, extra);
               }}
             />
           </div>

@@ -128,7 +128,7 @@ function signRequestObject(requestObject) {
     signStrList.push(key + "=" + fieldMap[key]);
   }
   let signOriginStr = signStrList.join("&");
-  console.log("signOriginStr", signOriginStr);
+  //console.log("signOriginStr", signOriginStr);
   return signString(signOriginStr, config.privateKey);
 }
 
@@ -302,7 +302,7 @@ app.post("/create/order", function (req, res) {
 // start server
 let serverPort = 8081;
 var app = app.listen(serverPort, function () {
-  console.log("server started, port:" + serverPort);
+  //console.log("server started, port:" + serverPort);
 });
 `;
   } else if (name === "Python") {

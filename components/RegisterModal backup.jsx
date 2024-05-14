@@ -46,7 +46,7 @@
 //   });
 
 //   const closeModal = () => {
-//     console.log("closeModal triggered");
+//     //console.log("closeModal triggered");
 //     props.onCloseModal();
 //   };
 
@@ -75,7 +75,7 @@
 //         contactEmail
 //       );
 
-//       console.log({ response });
+//       //console.log({ response });
 
 //       if (response.status === 201) {
 //         const { data: appCubeRegestrationData } = await http.post(
@@ -92,13 +92,13 @@
 //           }
 //         );
 
-//         console.log({
+//         //console.log({
 //           siteId: appCubeRegestrationData.siteId,
 //           tenant: appCubeRegestrationData?.tenantId,
 //         });
 
 //         if (appCubeRegestrationData) {
-//           console.log("User registered on on CAS appCube");
+//           //console.log("User registered on on CAS appCube");
 
 //           if (appCubeRegestrationData) {
 //             const { data: siteegestrationData } = await http.post(
@@ -134,8 +134,8 @@
 //       }
 //     } catch (ex) {
 //       if (ex.response?.status === 400) {
-//         console.log("EXCEPTION 400", ex);
-//         console.log(ex.response);
+//         //console.log("EXCEPTION 400", ex);
+//         //console.log(ex.response);
 //         if (ex.response.data.error_code === "SYS0001") {
 //           alert(ex.response.data.error_msg);
 //         } else if (ex.response.data.error_code === "SYS0002") {
@@ -147,7 +147,7 @@
 //         }
 //         // setError(ex?.response?.data);
 //       } else {
-//         console.log("Something went wrong. SYS0001", ex);
+//         //console.log("Something went wrong. SYS0001", ex);
 //         setLoading(false);
 //         //setError("Something went wrong.");
 //       }

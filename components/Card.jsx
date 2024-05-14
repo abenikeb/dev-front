@@ -30,6 +30,8 @@ const ApiCard = (props) => {
         http.get(`${base_url}/user/${user_id}`),
       ]);
 
+      console.log({ userStatusResponse });
+
       const userStatus = userStatusResponse.data.status;
       const userData = userDataResponse.data;
 
@@ -41,7 +43,19 @@ const ApiCard = (props) => {
       ) {
         setCompleteStatus("completed");
       } else {
-        setCompleteStatus(status);
+        const { data } = await http.post(
+          "https://developer.ethiotelecom.et/v2/merchant-info/getOrgCredInfo",
+          {
+            shortCode: userStatusResponse.data.short_code,
+          }
+        );
+        console.log({ resc_: data.shortCode });
+
+        if (data && data.shortCode) {
+          setCompleteStatus("completed");
+        } else {
+          setCompleteStatus(status);
+        }
       }
     } catch (ex) {
       console.error(`Error:`, ex);
@@ -82,7 +96,7 @@ const ApiCard = (props) => {
     }
   }, [userId, completeStatus]);
 
-  const handleRouting = () => {
+  const handleRouting = async () => {
     if (completeStatus === "completed") {
       setIncompletePopup(false);
       setModalPopup(false);
@@ -90,7 +104,40 @@ const ApiCard = (props) => {
       router.push("/user/dashboard");
       setLoading(false);
     } else if (completeStatus === "pending") {
-      setModalPopup(true);
+      const userInfo = getUserData();
+      let user_id;
+
+      if (userInfo.role === "admin" || userInfo.role === "Admin") {
+        user_id = userInfo.id;
+      } else if (userInfo.role === "Developer") {
+        user_id = userInfo.userId;
+      }
+
+      const [userStatusResponse] = await Promise.all([
+        checkUserStatus(user_id),
+        http.get(`${base_url}/user/${user_id}`),
+      ]);
+
+      // setModalPopup(true);
+
+      let resTopOrg = await http.post(
+        `${base_url}/merchant-info/createTopOrgWithUpdate`,
+        {
+          tenant_Id: userStatusResponse.data.tenant_Id,
+          shortCode: userStatusResponse.data.short_code,
+          organizationName: "neworg",
+          contactPhone: "9233461",
+        }
+      );
+
+      console.log({
+        message: "Merchant Info",
+        completeStatus,
+        user_id,
+        userStatusResponse: userStatusResponse.data,
+        resTopOrg,
+      });
+      window.location.href = "/user/apis";
     } else if (completeStatus === undefined) {
       checkMerchantStatus;
       setIncompletePopup(true);

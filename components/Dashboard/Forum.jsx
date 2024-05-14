@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import { saveFroum } from "@app/api-services/forumService";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
+import "react-quill/dist/quill.bubble.css";
+import { Button, Badge, Space } from "antd";
+import { UpOutlined, DownOutlined } from "@ant-design/icons";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
-const ForumCard = ({ data }) => {
+const ForumCard = ({ data, user }) => {
   const [replyForum, setReplyForum] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [replyContent, setReplyContent] = useState("");
-
   const [editorHtml, setEditorHtml] = useState("");
 
   const handleChange = (html) => {
@@ -27,11 +27,10 @@ const ForumCard = ({ data }) => {
         { indent: "-1" },
         { indent: "+1" },
       ],
-      ["link", "image", "video", "code"], // Added 'code' option
+      ["link", "image", "video", "code"],
       ["clean"],
     ],
     clipboard: {
-      // toggle to add extra line breaks when pasting HTML:
       matchVisual: false,
     },
   };
@@ -56,21 +55,16 @@ const ForumCard = ({ data }) => {
 
   const handleReply = (forum) => {
     setReplyForum(forum);
-    console.log({ forum });
     setModalVisible(true);
   };
 
   const handleModalCancel = () => {
     setReplyForum(null);
     setModalVisible(false);
-    // setEditorState(EditorState.createEmpty());
     setReplyContent("");
   };
 
   const handleSubmit = () => {
-    // const contentState = editorHtml.getCurrentContent();
-    // const rawContentState = convertToRaw(contentState);
-    // const content = JSON.stringify(rawContentState);
     const content = editorHtml;
 
     const forum = {
@@ -82,10 +76,7 @@ const ForumCard = ({ data }) => {
         },
       ],
     };
-    // You can perform your submission logic here, e.g., make a POST request
-    console.log("Content to submit:", forum);
     saveFroum(forum);
-    // Close the modal after submission
     handleModalCancel();
   };
 
@@ -102,22 +93,54 @@ const ForumCard = ({ data }) => {
           <h4 style={{ marginBottom: "5px" }}>1 Answers</h4>
           <ul style={{ listStyleType: "none", padding: 0 }}>
             {forum.replies.map((reply, index) => (
-              <li key={index} style={{ width: "100%", marginBottom: "10px" }}>
+              <li
+                key={index}
+                style={{ width: "100%", marginBottom: "20px", display: "flex" }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    marginRight: "10px",
+                  }}
+                >
+                  <Button
+                    type="text"
+                    shape="circle"
+                    icon={
+                      <UpOutlined
+                        style={{ fontSize: "20px", color: "#1890ff" }}
+                      />
+                    }
+                  />
+                  <Badge count={0} showZero style={{ margin: "5px" }}>
+                    <Button
+                      type="text"
+                      shape="circle"
+                      icon={
+                        <DownOutlined
+                          style={{ fontSize: "20px", color: "#ff4d4f" }}
+                        />
+                      }
+                    />
+                  </Badge>
+                </div>
                 <div
                   style={{
                     backgroundColor: "#ffffff",
                     padding: "10px",
                     borderRadius: "5px",
                     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                    flex: 1,
                   }}
                 >
-                  <div dangerouslySetInnerHTML={{ __html: reply.message }} />
-                  {/* <Editor
-                    editorState={EditorState.createWithContent(
-                      convertFromRaw(JSON.parse(reply.message))
-                    )}
+                  <ReactQuill
+                    value={reply.message}
                     readOnly={true}
-                  /> */}
+                    theme={"bubble"}
+                    style={{ color: "black", fontSize: "16px" }}
+                  />
                 </div>
               </li>
             ))}
@@ -138,7 +161,6 @@ const ForumCard = ({ data }) => {
       hour: "numeric",
       minute: "numeric",
       second: "numeric",
-      // timeZoneName: "short",
     };
     return formattedDate.toLocaleDateString(undefined, options);
   }
@@ -204,17 +226,17 @@ const ForumCard = ({ data }) => {
       )}
       <ul className="divide-y">
         {data.map((forum) => (
-          <li className="flex flex-row gap-x-5 py-5 text-black">
-            <div className="flex flex-col">
+          <li className="flex flex-row gap-x-5 py-5">
+            <div className="flex flex-col w-full">
               <div className="flex flex-row justify-between">
-                <section>
+                <div>
                   <p className="mb-2 text-2xl font-semibold text-gray-900">
                     {forum.title}
                   </p>
                   <p className="mb-2 text-xs text-gray-500">
                     Asked {formatCounterDate(forum.created_at.toString())}
                   </p>
-                </section>
+                </div>
                 <div className="flex flex-row">
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-gray-200 bg-gray-100 text-lg font-bold text-white mr-2">
                     <img
@@ -234,43 +256,36 @@ const ForumCard = ({ data }) => {
                 </div>
               </div>
               <hr />
-              <div className="py-3 px-7">
-                {/* <div dangerouslySetInnerHTML={{ __html: forum.content }} /> */}
+              <div>
                 <ReactQuill
                   value={forum.content}
                   readOnly={true}
                   theme={"bubble"}
+                  style={{ color: "black", fontSize: "500" }}
                 />
-                {/* <div
-                  dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(forum.content),
-                  }}
-                /> */}
-                {/* <Editor
-                  editorState={EditorState.createWithContent(
-                    convertFromRaw(JSON.parse(forum.content))
-                  )}
-                  readOnly={true}
-                /> */}
 
                 {renderReplySection(forum)}
-                <div className="mt-10 w-32">
-                  <button
-                    className="btn btn-sm"
-                    onClick={() => {
-                      document.getElementById("my_modal_4").showModal();
-                      handleReply(forum);
-                    }}
-                  >
-                    Reply
-                  </button>
-                  {/* <Button onClick={() => handleReply(forum)}>Reply</Button> */}
-                </div>
+                {user && user.email === "adisu.feyisa@ethiotelecom.et" ? (
+                  <div className="mt-10 w-32">
+                    <button
+                      className="btn btn-sm"
+                      onClick={() => {
+                        document.getElementById("my_modal_4").showModal();
+                        handleReply(forum);
+                      }}
+                    >
+                      Your Answer
+                    </button>
+                  </div>
+                ) : (
+                  <></>
+                )}
               </div>
             </div>
           </li>
         ))}
       </ul>
+      {/* Modal */}
       <dialog id="my_modal_4" className="modal">
         <div className="modal-box w-1/2 max-w-5xl">
           <p className="py-4 mb-5">
@@ -291,7 +306,7 @@ const ForumCard = ({ data }) => {
                 onClick={handleSubmit}
                 className="btn btn-sm mr-2 bg-lime-500 text-white"
               >
-                Submit
+                Post Your Answer
               </button>
               <button className="btn btn-sm">Close</button>
             </form>

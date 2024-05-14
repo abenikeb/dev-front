@@ -1,5 +1,7 @@
 import React from "react";
 import Image from "next/image";
+import copy from "copy-to-clipboard";
+import { message } from "antd";
 
 const ApiKeys = ({
   credentials,
@@ -8,6 +10,10 @@ const ApiKeys = ({
   copied,
   isPKeyClicked,
 }) => {
+  const handleCopyText = (text, data) => {
+    copy(data);
+    message.success(`${text} copied to clipboard`);
+  };
   return (
     <div className="md:flex gap-3 w-full">
       <div className="w-full bg-white rounded-md border border-gray-300 p-2 relative">
@@ -43,7 +49,9 @@ AppSecret: is an identifier to establish a connection with the fabric API of the
               </p>
               <div
                 className="copy_btn"
-                onClick={() => handleCopy("merchant_id")}
+                onClick={() =>
+                  handleCopyText("merchant_id", credentials.merchantAppId)
+                }
               >
                 <Image
                   src={
@@ -65,7 +73,9 @@ AppSecret: is an identifier to establish a connection with the fabric API of the
               </p>
               <div
                 className="copy_btn"
-                onClick={() => handleCopy("fabric_app_id")}
+                onClick={() =>
+                  handleCopyText("fabric_app_id", credentials.fabricAppId)
+                }
               >
                 <Image
                   src={
@@ -87,7 +97,9 @@ AppSecret: is an identifier to establish a connection with the fabric API of the
               </p>
               <div
                 className="copy_btn"
-                onClick={() => handleCopy("short_code")}
+                onClick={() =>
+                  handleCopyText("short_code", credentials.short_code)
+                }
               >
                 <Image
                   src={
@@ -109,7 +121,9 @@ AppSecret: is an identifier to establish a connection with the fabric API of the
               </p>
               <div
                 className="copy_btn"
-                onClick={() => handleCopy("app_secret")}
+                onClick={() =>
+                  handleCopyText("app_secret", credentials.fabricAppSercet)
+                }
               >
                 <Image
                   src={
@@ -134,32 +148,6 @@ AppSecret: is an identifier to establish a connection with the fabric API of the
             <h3>PrivateKey: </h3>
           </div>
           <div className="key-value w-96 flex flex-col gap-y-6 ml-2 overflow-auto">
-            {/* <div className="flex gap-2 w-full items-center">
-              <p
-                className={`text-sm font-bold truncate w-5/6 ${
-                  credentials ? "" : "animate-pulse"
-                }`}
-              >
-                {credentials
-                  ? credentials.public_key
-                  : "#####-#####-#####-#####"}
-              </p>
-              <div
-                className="copy_btn"
-                onClick={() => handleCopy("public_key")}
-              >
-                <Image
-                  src={
-                    copied?.public_key === false
-                      ? "/assets/icons/code.svg"
-                      : "/assets/icons/tick.svg"
-                  }
-                  alt={"tick_icon"}
-                  width={20}
-                  height={20}
-                />
-              </div>
-            </div> */}
             <div className="flex gap-2 w-full items-center">
               <p className="text-sm font-bold truncate w-5/6">
                 {credentials && isPKeyClicked
@@ -168,7 +156,9 @@ AppSecret: is an identifier to establish a connection with the fabric API of the
               </p>
               <div
                 className="copy_btn"
-                onClick={() => handleCopy("private_key")}
+                onClick={() =>
+                  handleCopyText("private_key", credentials.privateKey)
+                }
               >
                 <Image
                   src={

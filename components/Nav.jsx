@@ -55,12 +55,12 @@ const navLink = [
   //   icon: "/assets/icons/mobile-forum.svg",
   //   isProtectedRoute: false,
   // },
-  // {
-  //   title: "Support",
-  //   path: "/user/support",
-  //   icon: "/assets/icons/mobile-forum.svg",
-  //   isProtectedRoute: false,
-  // },
+  {
+    title: "Support",
+    path: "/user/support",
+    icon: "/assets/icons/mobile-forum.svg",
+    isProtectedRoute: false,
+  },
   {
     title: "Team",
     path: "/user/team",

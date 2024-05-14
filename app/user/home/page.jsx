@@ -45,10 +45,10 @@ const Home = () => {
   const checkMerchantStatus = async (user_id) => {
     try {
       const response = await checkUserStatus(user_id);
-      console.log({ newResponse: response.data });
+      //console.log({ newResponse: response.data });
       const status = response.data.status;
       const { data } = await http.get(`${base_url}/user/${user_id}`);
-      console.log({ data, status });
+      //console.log({ data, status });
       if (data && data.status === "active") {
         setCompleteStatus("pending");
         setTeamUserInfo({
@@ -65,9 +65,9 @@ const Home = () => {
       }
     } catch (ex) {
       if (ex.response?.status === 400) {
-        console.log("EX", ex);
+        //console.log("EX", ex);
       } else {
-        console.log("something went wrong", ex);
+        //console.log("something went wrong", ex);
       }
     } finally {
     }
@@ -121,7 +121,7 @@ const Home = () => {
   };
 
   const handleJoinTeam = (searchTerm) => {
-    console.log(`Joining team with searchTerm: ${searchTerm}`);
+    //console.log(`Joining team with searchTerm: ${searchTerm}`);
     setJoinTeamModalVisible(false); // Close the modal
   };
 

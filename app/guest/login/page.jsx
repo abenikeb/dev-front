@@ -37,7 +37,7 @@ const Login = () => {
 
   const createData = async (e) => {
     e.preventDefault();
-    // console.log("e", e);
+    // //console.log("e", e);
     // await recaptchaRef.current.execute();
     handleRecaptchaResolved("captchaCode");
   };
@@ -57,7 +57,7 @@ const Login = () => {
         captchaCode
       );
 
-      console.log("RES", response.status);
+      //console.log("RES", response.status);
       if (response === "OK") {
         router.push("/user/home");
         setLoading(false);
@@ -74,7 +74,7 @@ const Login = () => {
         setLoading(false);
       }
     } catch (err) {
-      console.log("ERROR", err);
+      //console.log("ERROR", err);
       setLoading(false);
     } finally {
       setIsSubmitting(false);
